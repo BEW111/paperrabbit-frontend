@@ -5,7 +5,7 @@ const MAX_SEARCH_RESULTS = 10;
 export const fetchArxivTitle = async (articleId) => {
   try {
     const response = await axios.get(
-      `http://export.arxiv.org/api/query?id_list=${articleId}`
+      `https://export.arxiv.org/api/query?id_list=${articleId}`
     );
 
     // Parse the xml data
@@ -42,7 +42,7 @@ export const convertApiGraphToG6Graph = async (apiGraph) => {
 
 export const searchArxiv = async (query) => {
   try {
-    const response = await axios.get("http://export.arxiv.org/api/query", {
+    const response = await axios.get("https://export.arxiv.org/api/query", {
       params: {
         search_query: `ti:${query}`, // searches in all fields
         start: 0, // starting index
