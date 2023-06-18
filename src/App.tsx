@@ -36,7 +36,7 @@ const data = {
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [graphData, setGraphData] = useState(data);
-  const [paperPopup, setPaperPopup] = useState("");
+  const [paperPopup, setPaperPopup] = useState({});
 
   return (
     <div className="h-screen w-full bg-amber-100">
@@ -47,10 +47,10 @@ const App = () => {
         <RabbitGraph data={graphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/3 items-center justify-center p-6">
-        {paperPopup && (
+        {paperPopup?.id && (
           <PaperPopup
-            articleId={paperPopup}
-            closePaperPopup={() => setPaperPopup("")}
+            paperPopupInfo={paperPopup}
+            closePaperPopup={() => setPaperPopup({})}
           />
         )}
       </div>

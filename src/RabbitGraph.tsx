@@ -79,7 +79,7 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
         width: window.screen.width,
         height: 800,
         modes: {
-          default: ["drag-canvas", "zoom-canvas", "drag-node"],
+          default: ["drag-canvas", "drag-node"],
         },
         layout: {
           type: "force",
@@ -136,7 +136,10 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
       const nodeData = e.item.getModel();
 
       // Set paper popup
-      setPaperPopup(nodeData.id);
+      setPaperPopup({
+        id: nodeData.id,
+        label: nodeData.label,
+      });
     });
 
     // Click an edge

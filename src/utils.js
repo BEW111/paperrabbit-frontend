@@ -44,11 +44,13 @@ export const searchArxiv = async (query) => {
   try {
     const response = await axios.get("https://export.arxiv.org/api/query", {
       params: {
-        search_query: `ti:${query}`, // searches in all fields
+        search_query: `ti:${query} AND cat:cs.LG`, // searches in all fields
         start: 0, // starting index
         max_results: MAX_SEARCH_RESULTS, // number of results to fetch
       },
     });
+
+    console.log(response);
 
     // Parse the xml data
     const parser = new DOMParser();
