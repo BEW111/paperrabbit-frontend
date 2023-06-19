@@ -34,7 +34,6 @@ const data = {
 };
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [graphData, setGraphData] = useState(data);
   const [paperPopup, setPaperPopup] = useState({});
 

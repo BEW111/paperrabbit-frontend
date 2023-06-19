@@ -67,11 +67,6 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
   const graphRef = React.useRef(null);
   let graph = null;
 
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-  useEffect(() => {
-    setGraphData(data);
-  }, []);
-
   useEffect(() => {
     if (!graph) {
       graph = new G6.Graph({
@@ -104,55 +99,63 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
           },
         },
       });
+
+      graph.data(data);
+      graph.render();
+
+      // Mouse enter a node
+      graph.on("node:mouseenter", (e) => {
+        const nodeItem = e.item; // Get the target item
+        graph.get("canvas").setCursor("pointer");
+        graph.setItemState(nodeItem, "hover", true); // Set the state 'hover' of the item to be true
+      });
+
+      // Mouse leave a node
+      graph.on("node:mouseleave", (e) => {
+        const nodeItem = e.item; // Get the target item
+        graph.get("canvas").setCursor("default");
+        graph.setItemState(nodeItem, "hover", false); // Set the state 'hover' of the item to be false
+      });
+
+      // Click a node
+      graph.on("node:click", (e) => {
+        // Swich the 'click' state of the node to be false
+        const clickNodes = graph.findAllByState("node", "click");
+        clickNodes.forEach((cn) => {
+          graph.setItemState(cn, "click", false);
+        });
+        const nodeItem = e.item; // et the clicked item
+        graph.setItemState(nodeItem, "click", true); // Set the state 'click' of the item to be true
+
+        const nodeData = e.item.getModel();
+
+        // Set paper popup
+        setPaperPopup({
+          id: nodeData.id,
+          label: nodeData.label,
+        });
+      });
+
+      // Click an edge
+      graph.on("edge:click", (e) => {
+        // Swich the 'click' state of the edge to be false
+        const clickEdges = graph.findAllByState("edge", "click");
+        clickEdges.forEach((ce) => {
+          graph.setItemState(ce, "click", false);
+        });
+        const edgeItem = e.item; // Get the clicked item
+        graph.setItemState(edgeItem, "click", true); // Set the state 'click' of the item to be true
+      });
+    } else {
+      graph.changeData(data);
     }
 
-    graph.data(data);
-    graph.render();
-
-    // Mouse enter a node
-    graph.on("node:mouseenter", (e) => {
-      const nodeItem = e.item; // Get the target item
-      graph.get("canvas").setCursor("pointer");
-      graph.setItemState(nodeItem, "hover", true); // Set the state 'hover' of the item to be true
-    });
-
-    // Mouse leave a node
-    graph.on("node:mouseleave", (e) => {
-      const nodeItem = e.item; // Get the target item
-      graph.get("canvas").setCursor("default");
-      graph.setItemState(nodeItem, "hover", false); // Set the state 'hover' of the item to be false
-    });
-
-    // Click a node
-    graph.on("node:click", (e) => {
-      // Swich the 'click' state of the node to be false
-      const clickNodes = graph.findAllByState("node", "click");
-      clickNodes.forEach((cn) => {
-        graph.setItemState(cn, "click", false);
-      });
-      const nodeItem = e.item; // et the clicked item
-      graph.setItemState(nodeItem, "click", true); // Set the state 'click' of the item to be true
-
-      const nodeData = e.item.getModel();
-
-      // Set paper popup
-      setPaperPopup({
-        id: nodeData.id,
-        label: nodeData.label,
-      });
-    });
-
-    // Click an edge
-    graph.on("edge:click", (e) => {
-      // Swich the 'click' state of the edge to be false
-      const clickEdges = graph.findAllByState("edge", "click");
-      clickEdges.forEach((ce) => {
-        graph.setItemState(ce, "click", false);
-      });
-      const edgeItem = e.item; // Get the clicked item
-      graph.setItemState(edgeItem, "click", true); // Set the state 'click' of the item to be true
-    });
-  }, []);
+    return () => {
+      // Cleanup function
+      graph.destroy();
+      graph = null;
+    };
+  }, [data]);
 
   return <div ref={graphRef}></div>;
 };

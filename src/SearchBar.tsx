@@ -9,6 +9,7 @@ const API_URL = "api url goes here";
 
 const SearchResultComponent = (props) => {
   const onAddResult = async () => {
+    props.setSearchResultsLoading(true);
     props.closeSearchResults();
     console.log(props.arxivId);
 
@@ -17,12 +18,39 @@ const SearchResultComponent = (props) => {
 
     if (match) {
       const nodeResults = await axios.get(`${API_URL}/${match[1]}`);
-      const newGraph = await convertApiGraphToG6Graph(nodeResults);
+      // const newGraph = await convertApiGraphToG6Graph(nodeResults);
+      const newGraph = {
+        nodes: [
+          {
+            id: "A",
+            label: "hello",
+          },
+          {
+            id: "B",
+            label: "hi",
+          },
+          {
+            id: "C",
+            label: "hey",
+          },
+        ],
+        edges: [
+          {
+            source: "A",
+            target: "B",
+          },
+          {
+            source: "B",
+            target: "C",
+          },
+        ],
+      };
       console.log(newGraph);
       props.setGraphData(newGraph);
     } else {
       console.log("Error in extracting ID");
     }
+    props.setSearchResultsLoading(false);
   };
 
   return (
@@ -154,6 +182,7 @@ const SearchBar = ({ setGraphData }) => {
                 summary={result.summary}
                 closeSearchResults={closeSearchResults}
                 setGraphData={setGraphData}
+                setSearchResultsLoading={setSearchResultsLoading}
               />
             ))}
           </div>
