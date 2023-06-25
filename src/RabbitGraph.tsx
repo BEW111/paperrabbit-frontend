@@ -84,6 +84,7 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
         },
         defaultNode: {
           type: "rabbit-node",
+          size: 20,
           labelCfg: {
             style: {
               fontSize: 20,
@@ -136,16 +137,16 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
         });
       });
 
-      // Click an edge
-      graph.on("edge:click", (e) => {
-        // Swich the 'click' state of the edge to be false
-        const clickEdges = graph.findAllByState("edge", "click");
-        clickEdges.forEach((ce) => {
-          graph.setItemState(ce, "click", false);
-        });
-        const edgeItem = e.item; // Get the clicked item
-        graph.setItemState(edgeItem, "click", true); // Set the state 'click' of the item to be true
-      });
+      // // Click an edge
+      // graph.on("edge:click", (e) => {
+      //   // Swich the 'click' state of the edge to be false
+      //   const clickEdges = graph.findAllByState("edge", "click");
+      //   clickEdges.forEach((ce) => {
+      //     graph.setItemState(ce, "click", false);
+      //   });
+      //   const edgeItem = e.item; // Get the clicked item
+      //   graph.setItemState(edgeItem, "click", true); // Set the state 'click' of the item to be true
+      // });
     } else {
       graph.changeData(data);
     }

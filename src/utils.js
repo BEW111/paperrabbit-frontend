@@ -27,10 +27,12 @@ export const fetchArxivTitle = async (articleId) => {
 
 export const convertApiGraphToG6Graph = async (apiGraph) => {
   let newData = {
-    nodes: apiGraph.nodes.map(async (id) => ({
-      id: id,
-      label: await fetchArxivTitle(id),
-    })),
+    nodes: await Promise.all(
+      apiGraph.nodes.map(async (id) => ({
+        id: id,
+        label: await fetchArxivTitle(id),
+      }))
+    ),
     edges: apiGraph.edges.map((triple) => ({
       source: triple[0],
       target: triple[2],

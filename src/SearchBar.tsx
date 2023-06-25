@@ -5,7 +5,7 @@ import axios from "axios";
 
 import { searchArxiv, convertApiGraphToG6Graph } from "./utils";
 
-const API_URL = "api url goes here";
+const API_URL = "http://localhost:8000";
 
 const SearchResultComponent = (props) => {
   const onAddResult = async () => {
@@ -17,34 +17,8 @@ const SearchResultComponent = (props) => {
     const match = link.match(/abs\/(\d+\.\d+)/);
 
     if (match) {
-      const nodeResults = await axios.get(`${API_URL}/${match[1]}`);
-      // const newGraph = await convertApiGraphToG6Graph(nodeResults);
-      const newGraph = {
-        nodes: [
-          {
-            id: "A",
-            label: "hello",
-          },
-          {
-            id: "B",
-            label: "hi",
-          },
-          {
-            id: "C",
-            label: "hey",
-          },
-        ],
-        edges: [
-          {
-            source: "A",
-            target: "B",
-          },
-          {
-            source: "B",
-            target: "C",
-          },
-        ],
-      };
+      const nodeResults = (await axios.get(`${API_URL}/${match[1]}`)).data;
+      const newGraph = await convertApiGraphToG6Graph(nodeResults);
       console.log(newGraph);
       props.setGraphData(newGraph);
     } else {
