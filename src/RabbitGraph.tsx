@@ -24,7 +24,7 @@ function Graph(props) {
         setPaperPopup({
           id: clickedNode.id,
           label: clickedNode.label,
-          type: "notes",
+          mode: "notes",
         });
       }
     }

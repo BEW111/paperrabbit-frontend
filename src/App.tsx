@@ -51,7 +51,7 @@ const App = () => {
         <SearchBar setGraphData={setGraphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/3 items-center justify-center p-6">
-        {paperPopup.type != null && (
+        {paperPopup.mode != null && (
           <PaperPopup
             paperPopupInfo={paperPopup}
             setPaperPopup={setPaperPopup}
