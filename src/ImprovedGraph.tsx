@@ -63,6 +63,7 @@ function Graph(props) {
             background: NODE_FILL_SELECT_COLOR,
           },
         },
+        labelHighlightBold: false,
         scaling: {
           label: {
             enabled: true,
