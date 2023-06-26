@@ -42,7 +42,7 @@ const App = () => {
 
   return (
     <div className="h-screen w-full bg-amber-100">
-      <div className="absolute h-full w-full">
+      <div className="absolute h-full w-full cursor-move">
         <ImprovedGraph graphData={graphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute flex h-full w-full flex-col items-center justify-center">

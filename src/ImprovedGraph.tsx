@@ -1,20 +1,22 @@
 import React, { useEffect, useRef } from "react";
-import { Network } from "vis-network/peer/esm/vis-network";
+import { Network, Options } from "vis-network/peer/esm/vis-network";
 import { DataSet } from "vis-data/peer/esm/vis-data";
 
-const STROKE_COLOR = "#111827";
-const STROKE_HOVER_COLOR = "#f59e0b";
-const NODE_FILL_COLOR = "#fff7ed";
-const NODE_FILL_HOVER_COLOR = "#ffedd5";
+const STROKE_COLOR = "#111827"; // gray-900
+const STROKE_HOVER_COLOR = "#f59e0b"; // amber-500
+const STROKE_SELECT_COLOR = "#1e3a8a"; // blue-900
+const NODE_FILL_COLOR = "#fffbeb"; // amber-50
+const NODE_FILL_HOVER_COLOR = "#fef3c7"; // amber-100
+const NODE_FILL_SELECT_COLOR = "#bfdbfe"; // blue-200
 const TEXT_COLOR = "black";
 
 function Graph(props) {
   const { graphData, setPaperPopup } = props;
-  const domNode = useRef(null);
-  let network = null;
+  const domNode = useRef<HTMLElement | null>(null);
+  let network: Network | null = null;
 
   const handleSelectNode = (params) => {
-    if (params.nodes.length > 0) {
+    if (params.nodes.length > 0 && network) {
       const nodeId = params.nodes[0];
       const clickedNode = graphData.nodes.find((node) => node.id === nodeId);
 
@@ -23,13 +25,21 @@ function Graph(props) {
           id: clickedNode.id,
           label: clickedNode.label,
         });
-        network.body.data.nodes.update(clickedNode);
       }
+    }
+  };
+  const handleHoverNode = (params) => {
+    if (network) {
+      network.canvas.body.container.style.cursor = "pointer";
+    }
+  };
+  const handleBlurNode = (params) => {
+    if (network) {
+      network.canvas.body.container.style.cursor = "move";
     }
   };
 
   useEffect(() => {
-    console.log(graphData);
     const nodesDataset = new DataSet(graphData.nodes);
     const edgesDataset = new DataSet(graphData.edges);
 
@@ -38,22 +48,19 @@ function Graph(props) {
       edges: edgesDataset,
     };
 
-    const options = {
-      interaction: {
-        hover: true,
-      },
+    const options: Options = {
       nodes: {
         shape: "box",
         color: {
           border: STROKE_COLOR,
           background: NODE_FILL_COLOR,
-          highlight: {
-            border: STROKE_HOVER_COLOR,
-            background: "red",
-          },
           hover: {
-            border: "black",
+            border: STROKE_HOVER_COLOR,
             background: NODE_FILL_HOVER_COLOR,
+          },
+          highlight: {
+            border: STROKE_SELECT_COLOR,
+            background: NODE_FILL_SELECT_COLOR,
           },
         },
         scaling: {
@@ -63,11 +70,28 @@ function Graph(props) {
             max: 30,
           },
         },
+        widthConstraint: {
+          minimum: 100,
+          maximum: 300,
+        },
+      },
+      interaction: {
+        hover: true,
+      },
+      physics: {
+        enabled: true,
+        solver: "forceAtlas2Based",
+        forceAtlas2Based: {
+          springLength: 150,
+          gravitationalConstant: -100,
+        },
       },
     };
 
     network = new Network(domNode.current, data, options);
     network.on("click", handleSelectNode);
+    network.on("hoverNode", handleHoverNode);
+    network.on("blurNode", handleBlurNode);
   }, [graphData]);
 
   return (
