@@ -1,6 +1,12 @@
 import Prism from "prismjs";
 import "prismjs/components/prism-markdown";
-import React, { useCallback, useMemo } from "react";
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
 import { Slate, Editable, withReact } from "slate-react";
 import { Text, createEditor, Descendant } from "slate";
 import { withHistory } from "slate-history";
@@ -9,6 +15,10 @@ import { css } from "@emotion/css";
 const MarkdownPreviewExample = () => {
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const containerRef = useRef(null);
+
+  const [containerHeight, setContainerHeight] = useState(0);
+
   const decorate = useCallback(([node, path]) => {
     const ranges = [];
 
@@ -47,15 +57,26 @@ const MarkdownPreviewExample = () => {
     return ranges;
   }, []);
 
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerHeight(containerRef.current.getBoundingClientRect().height);
+    }
+  }, []);
+
   return (
-    <Slate editor={editor} initialValue={initialValue}>
-      <Editable
-        className="outline-none"
-        decorate={decorate}
-        renderLeaf={renderLeaf}
-        placeholder="Write some markdown..."
-      />
-    </Slate>
+    <div className="h-full w-full" ref={containerRef}>
+      <Slate editor={editor} initialValue={initialValue}>
+        <Editable
+          className="outline-none"
+          decorate={decorate}
+          renderLeaf={renderLeaf}
+          placeholder="Write some markdown..."
+          style={{
+            minHeight: `${containerHeight}px`,
+          }}
+        />
+      </Slate>
+    </div>
   );
 };
 

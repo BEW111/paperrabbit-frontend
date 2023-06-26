@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import { BiX, BiArrowBack } from "react-icons/bi";
-import MarkdownPreviewExample from "./MarkdownEditor";
+import MarkdownPreview from "./MarkdownEditor";
 
 import { getQuizData } from "./utils";
 
@@ -167,7 +167,7 @@ const PaperPopup = ({ closePaperPopup, paperPopupInfo }) => {
       </div>
       <div className="pointer-events-auto flex-auto p-4">
         {mode == "notes" ? (
-          <MarkdownPreviewExample />
+          <MarkdownPreview />
         ) : (
           quizData && (
             <QuizComponent
