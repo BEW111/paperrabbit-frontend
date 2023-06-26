@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 
 import SearchBar from "./SearchBar";
-import RabbitGraph from "./RabbitGraph";
 
 import logo from "./logo.png";
-import PaperPopup from "./PaperPopup";
-import ImprovedGraph from "./ImprovedGraph";
+import PaperPopup, { PopupInfo, defaultPopupState } from "./PaperPopup";
+import RabbitGraph from "./RabbitGraph";
 
+// temp to start
 const data = {
   nodes: [
     {
@@ -38,21 +38,24 @@ const data = {
 
 const App = () => {
   const [graphData, setGraphData] = useState(data);
-  const [paperPopup, setPaperPopup] = useState({});
+  const [paperPopup, setPaperPopup] = useState<PopupInfo>(defaultPopupState);
+
+  console.log(paperPopup);
 
   return (
     <div className="h-screen w-full bg-amber-100">
       <div className="absolute h-full w-full cursor-move">
-        <ImprovedGraph graphData={graphData} setPaperPopup={setPaperPopup} />
+        <RabbitGraph graphData={graphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute flex h-full w-full flex-col items-center justify-center">
-        <SearchBar setGraphData={setGraphData} />
+        <SearchBar setGraphData={setGraphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/3 items-center justify-center p-6">
-        {paperPopup?.id && (
+        {paperPopup.type != null && (
           <PaperPopup
             paperPopupInfo={paperPopup}
-            closePaperPopup={() => setPaperPopup({})}
+            setPaperPopup={setPaperPopup}
+            closePaperPopup={() => setPaperPopup(defaultPopupState)}
           />
         )}
       </div>

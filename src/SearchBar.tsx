@@ -4,6 +4,7 @@ import { BiX } from "react-icons/bi";
 import axios from "axios";
 
 import { searchArxiv, convertApiGraphToVisGraph } from "./utils";
+import { defaultPopupState } from "./PaperPopup";
 
 const API_URL = "http://127.0.0.1:5000";
 
@@ -50,7 +51,7 @@ type SearchResult = {
   doi: string | null;
 };
 
-const SearchBar = ({ setGraphData }) => {
+const SearchBar = ({ setGraphData, setPaperPopup }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResultsLoading, setSearchResultsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
@@ -62,6 +63,8 @@ const SearchBar = ({ setGraphData }) => {
     const results: Array<SearchResult> = await searchArxiv(query);
     setSearchResults(results);
     setSearchResultsLoading(false);
+
+    setPaperPopup(defaultPopupState);
   };
 
   const closeSearchResults = () => {

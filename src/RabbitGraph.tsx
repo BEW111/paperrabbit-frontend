@@ -1,196 +1,107 @@
-// Deprecated
+import React, { useEffect, useRef } from "react";
+import { Network, Options } from "vis-network/peer/esm/vis-network";
+import { DataSet } from "vis-data/peer/esm/vis-data";
 
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
-import G6 from "@antv/g6";
-
-const STROKE_COLOR = "#111827";
-const STROKE_HOVER_COLOR = "#f59e0b";
-const NODE_FILL_COLOR = "#fff7ed";
-const NODE_FILL_HOVER_COLOR = "#ffedd5";
+const STROKE_COLOR = "#111827"; // gray-900
+const STROKE_HOVER_COLOR = "#f59e0b"; // amber-500
+const STROKE_SELECT_COLOR = "#1e3a8a"; // blue-900
+const NODE_FILL_COLOR = "#fffbeb"; // amber-50
+const NODE_FILL_HOVER_COLOR = "#fef3c7"; // amber-100
+const NODE_FILL_SELECT_COLOR = "#bfdbfe"; // blue-200
 const TEXT_COLOR = "black";
 
-G6.registerNode("rabbit-node", {
-  draw: (cfg, group) => {
-    const label = cfg.label;
-    const labelLength = label.length;
-    const rectWidth = labelLength * 14 + 20; // tweak this value based on your font size
+function Graph(props) {
+  const { graphData, setPaperPopup } = props;
+  const domNode = useRef<HTMLElement | null>(null);
+  let network: Network | null = null;
 
-    // now we add the rectangle and the text to the container
-    const keyShape = group.addShape("rect", {
-      attrs: {
-        x: -rectWidth / 2, // positions the rect correctly
-        y: -15,
-        width: rectWidth,
-        height: 35,
-        fill: NODE_FILL_COLOR,
-        stroke: STROKE_COLOR,
-        lineWidth: 2,
-        radius: 8,
-      },
-      draggable: true,
-    });
+  const handleSelectNode = (params) => {
+    if (params.nodes.length > 0 && network) {
+      const nodeId = params.nodes[0];
+      const clickedNode = graphData.nodes.find((node) => node.id === nodeId);
 
-    group.addShape("text", {
-      attrs: {
-        x: 0,
-        y: 3,
-        textAlign: "center",
-        textBaseline: "middle",
-        text: label,
-        fill: TEXT_COLOR,
-        fontSize: 20,
-        capture: false,
-      },
-      draggable: true,
-    });
-
-    return keyShape;
-  },
-  setState: function setState(name, value, item) {
-    const group = item.getContainer();
-    const shape = group.get("children")[0]; // get the keyShape which is the first child
-    const selectStyles = () => {
-      shape.attr("fill", NODE_FILL_HOVER_COLOR);
-      shape.attr("stroke", STROKE_HOVER_COLOR);
-    };
-    const unselectStyles = () => {
-      shape.attr("fill", NODE_FILL_COLOR);
-      shape.attr("stroke", STROKE_COLOR);
-    };
-    selectStyles();
-    if (!value) {
-      unselectStyles();
+      if (clickedNode) {
+        setPaperPopup({
+          id: clickedNode.id,
+          label: clickedNode.label,
+          type: "notes",
+        });
+      }
     }
-  },
-});
-
-G6.registerNode(
-  "dom-node",
-  {
-    draw: (cfg: ModelConfig, group: Group) => {
-      return group.addShape("dom", {
-        attrs: {
-          width: cfg.size[0],
-          height: cfg.size[1],
-          // DOM's html
-          html: `
-        <div style="background-color: #fff; border: 2px solid #5B8FF9; border-radius: 5px; width: ${
-          cfg.size[0] - 5
-        }px; height: ${cfg.size[1] - 5}px; display: flex;">
-          <div style="height: 100%; width: 33%; background-color: #CDDDFD">
-            <img alt="img" style="line-height: 100%; padding-top: 6px; padding-left: 8px;" src="https://gw.alipayobjects.com/mdn/rms_f8c6a0/afts/img/A*Q_FQT6nwEC8AAAAAAAAAAABkARQnAQ" width="20" height="20" />  
-          </div>
-          <span style="margin:auto; padding:auto; color: #5B8FF9">${
-            cfg.label
-          }</span>
-        </div>
-          `,
-        },
-        draggable: true,
-      });
-    },
-  },
-  "single-node"
-);
-
-const RabbitGraph = ({ data, setPaperPopup }) => {
-  const graphRef = React.useRef(null);
-  let graph = null;
+  };
+  const handleHoverNode = (params) => {
+    if (network) {
+      network.canvas.body.container.style.cursor = "pointer";
+    }
+  };
+  const handleBlurNode = (params) => {
+    if (network) {
+      network.canvas.body.container.style.cursor = "move";
+    }
+  };
 
   useEffect(() => {
-    if (!graph) {
-      graph = new G6.Graph({
-        container: ReactDOM.findDOMNode(graphRef.current),
-        width: window.screen.width,
-        height: 800,
-        renderer: "svg",
-        modes: {
-          default: ["drag-canvas", "drag-node"],
-        },
-        layout: {
-          type: "force",
-          preventOverlap: true,
-          linkDistance: 196,
-          direction: "LR",
-        },
-        defaultNode: {
-          type: "dom-node",
-          size: [100, 40],
-          labelCfg: {
-            style: {
-              fontSize: 20,
-            },
-          },
-        },
-        defaultEdge: {
-          type: "cubic",
-          style: {
-            endArrow: true,
-            lineWidth: 2,
-            stroke: STROKE_COLOR,
-          },
-        },
-      });
+    const nodesDataset = new DataSet(graphData.nodes);
+    const edgesDataset = new DataSet(graphData.edges);
 
-      graph.data(data);
-      graph.render();
-
-      // Mouse enter a node
-      // graph.on("node:mouseenter", (e) => {
-      //   const nodeItem = e.item; // Get the target item
-      //   graph.get("canvas").setCursor("pointer");
-      //   graph.setItemState(nodeItem, "hover", true); // Set the state 'hover' of the item to be true
-      // });
-
-      // // Mouse leave a node
-      // graph.on("node:mouseleave", (e) => {
-      //   const nodeItem = e.item; // Get the target item
-      //   graph.get("canvas").setCursor("default");
-      //   graph.setItemState(nodeItem, "hover", false); // Set the state 'hover' of the item to be false
-      // });
-
-      // // Click a node
-      // graph.on("node:click", (e) => {
-      //   // Swich the 'click' state of the node to be false
-      //   const clickNodes = graph.findAllByState("node", "click");
-      //   clickNodes.forEach((cn) => {
-      //     graph.setItemState(cn, "click", false);
-      //   });
-      //   const nodeItem = e.item; // et the clicked item
-      //   graph.setItemState(nodeItem, "click", true); // Set the state 'click' of the item to be true
-
-      //   const nodeData = e.item.getModel();
-
-      //   // Set paper popup
-      //   setPaperPopup({
-      //     id: nodeData.id,
-      //     label: nodeData.label,
-      //   });
-      // });
-
-      // // Click an edge
-      // graph.on("edge:click", (e) => {
-      //   // Swich the 'click' state of the edge to be false
-      //   const clickEdges = graph.findAllByState("edge", "click");
-      //   clickEdges.forEach((ce) => {
-      //     graph.setItemState(ce, "click", false);
-      //   });
-      //   const edgeItem = e.item; // Get the clicked item
-      //   graph.setItemState(edgeItem, "click", true); // Set the state 'click' of the item to be true
-      // });
-    } else {
-      graph.changeData(data);
-    }
-
-    return () => {
-      // Cleanup function
-      graph.destroy();
-      graph = null;
+    const data = {
+      nodes: nodesDataset,
+      edges: edgesDataset,
     };
-  }, [data]);
 
-  return <div ref={graphRef}></div>;
-};
+    const options: Options = {
+      nodes: {
+        shape: "box",
+        color: {
+          border: STROKE_COLOR,
+          background: NODE_FILL_COLOR,
+          hover: {
+            border: STROKE_HOVER_COLOR,
+            background: NODE_FILL_HOVER_COLOR,
+          },
+          highlight: {
+            border: STROKE_SELECT_COLOR,
+            background: NODE_FILL_SELECT_COLOR,
+          },
+        },
+        labelHighlightBold: false,
+        scaling: {
+          label: {
+            enabled: true,
+            min: 8,
+            max: 30,
+          },
+        },
+        widthConstraint: {
+          minimum: 100,
+          maximum: 300,
+        },
+      },
+      interaction: {
+        hover: true,
+      },
+      physics: {
+        enabled: true,
+        solver: "forceAtlas2Based",
+        forceAtlas2Based: {
+          springLength: 150,
+          gravitationalConstant: -100,
+        },
+      },
+    };
 
-export default RabbitGraph;
+    network = new Network(domNode.current, data, options);
+    network.on("click", handleSelectNode);
+    network.on("hoverNode", handleHoverNode);
+    network.on("blurNode", handleBlurNode);
+  }, [graphData]);
+
+  return (
+    <div
+      ref={domNode}
+      style={{ width: window.outerWidth, height: window.outerHeight }}
+    ></div>
+  );
+}
+
+export default Graph;

@@ -86,3 +86,21 @@ export const searchArxiv = async (query) => {
     return [];
   }
 };
+
+export const getQuizData = async (articleId) => {
+  // Check for cached quiz data
+
+  // Api call goes here
+  const fakeQuizData = {
+    answer: "B. Energy density",
+    options: [
+      "A. Constitutive parameters",
+      "B. Energy density",
+      "C. Momentum density",
+      "D. Energy flux",
+    ],
+    question: "What is the Energy Momentum Tensor related to?",
+  };
+
+  return fakeQuizData;
+};
