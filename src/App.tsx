@@ -5,6 +5,7 @@ import RabbitGraph from "./RabbitGraph";
 
 import logo from "./logo.png";
 import PaperPopup from "./PaperPopup";
+import ImprovedGraph from "./ImprovedGraph";
 
 const data = {
   nodes: [
@@ -23,12 +24,14 @@ const data = {
   ],
   edges: [
     {
-      source: "2106.09685",
-      target: "2305.14314",
+      from: "2106.09685",
+      to: "2305.14314",
+      arrows: "to",
     },
     {
-      source: "2208.07339",
-      target: "2305.14314",
+      from: "2208.07339",
+      to: "2305.14314",
+      arrows: "to",
     },
   ],
 };
@@ -39,11 +42,11 @@ const App = () => {
 
   return (
     <div className="h-screen w-full bg-amber-100">
+      <div className="absolute h-full w-full">
+        <ImprovedGraph graphData={graphData} setPaperPopup={setPaperPopup} />
+      </div>
       <div className="pointer-events-none absolute flex h-full w-full flex-col items-center justify-center">
         <SearchBar setGraphData={setGraphData} />
-      </div>
-      <div className="h-full w-full">
-        <RabbitGraph data={graphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/3 items-center justify-center p-6">
         {paperPopup?.id && (

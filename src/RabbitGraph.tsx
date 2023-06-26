@@ -1,3 +1,5 @@
+// Deprecated
+
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import G6 from "@antv/g6";
@@ -63,6 +65,35 @@ G6.registerNode("rabbit-node", {
   },
 });
 
+G6.registerNode(
+  "dom-node",
+  {
+    draw: (cfg: ModelConfig, group: Group) => {
+      return group.addShape("dom", {
+        attrs: {
+          width: cfg.size[0],
+          height: cfg.size[1],
+          // DOM's html
+          html: `
+        <div style="background-color: #fff; border: 2px solid #5B8FF9; border-radius: 5px; width: ${
+          cfg.size[0] - 5
+        }px; height: ${cfg.size[1] - 5}px; display: flex;">
+          <div style="height: 100%; width: 33%; background-color: #CDDDFD">
+            <img alt="img" style="line-height: 100%; padding-top: 6px; padding-left: 8px;" src="https://gw.alipayobjects.com/mdn/rms_f8c6a0/afts/img/A*Q_FQT6nwEC8AAAAAAAAAAABkARQnAQ" width="20" height="20" />  
+          </div>
+          <span style="margin:auto; padding:auto; color: #5B8FF9">${
+            cfg.label
+          }</span>
+        </div>
+          `,
+        },
+        draggable: true,
+      });
+    },
+  },
+  "single-node"
+);
+
 const RabbitGraph = ({ data, setPaperPopup }) => {
   const graphRef = React.useRef(null);
   let graph = null;
@@ -73,6 +104,7 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
         container: ReactDOM.findDOMNode(graphRef.current),
         width: window.screen.width,
         height: 800,
+        renderer: "svg",
         modes: {
           default: ["drag-canvas", "drag-node"],
         },
@@ -83,8 +115,8 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
           direction: "LR",
         },
         defaultNode: {
-          type: "rabbit-node",
-          size: 20,
+          type: "dom-node",
+          size: [100, 40],
           labelCfg: {
             style: {
               fontSize: 20,
@@ -105,37 +137,37 @@ const RabbitGraph = ({ data, setPaperPopup }) => {
       graph.render();
 
       // Mouse enter a node
-      graph.on("node:mouseenter", (e) => {
-        const nodeItem = e.item; // Get the target item
-        graph.get("canvas").setCursor("pointer");
-        graph.setItemState(nodeItem, "hover", true); // Set the state 'hover' of the item to be true
-      });
+      // graph.on("node:mouseenter", (e) => {
+      //   const nodeItem = e.item; // Get the target item
+      //   graph.get("canvas").setCursor("pointer");
+      //   graph.setItemState(nodeItem, "hover", true); // Set the state 'hover' of the item to be true
+      // });
 
-      // Mouse leave a node
-      graph.on("node:mouseleave", (e) => {
-        const nodeItem = e.item; // Get the target item
-        graph.get("canvas").setCursor("default");
-        graph.setItemState(nodeItem, "hover", false); // Set the state 'hover' of the item to be false
-      });
+      // // Mouse leave a node
+      // graph.on("node:mouseleave", (e) => {
+      //   const nodeItem = e.item; // Get the target item
+      //   graph.get("canvas").setCursor("default");
+      //   graph.setItemState(nodeItem, "hover", false); // Set the state 'hover' of the item to be false
+      // });
 
-      // Click a node
-      graph.on("node:click", (e) => {
-        // Swich the 'click' state of the node to be false
-        const clickNodes = graph.findAllByState("node", "click");
-        clickNodes.forEach((cn) => {
-          graph.setItemState(cn, "click", false);
-        });
-        const nodeItem = e.item; // et the clicked item
-        graph.setItemState(nodeItem, "click", true); // Set the state 'click' of the item to be true
+      // // Click a node
+      // graph.on("node:click", (e) => {
+      //   // Swich the 'click' state of the node to be false
+      //   const clickNodes = graph.findAllByState("node", "click");
+      //   clickNodes.forEach((cn) => {
+      //     graph.setItemState(cn, "click", false);
+      //   });
+      //   const nodeItem = e.item; // et the clicked item
+      //   graph.setItemState(nodeItem, "click", true); // Set the state 'click' of the item to be true
 
-        const nodeData = e.item.getModel();
+      //   const nodeData = e.item.getModel();
 
-        // Set paper popup
-        setPaperPopup({
-          id: nodeData.id,
-          label: nodeData.label,
-        });
-      });
+      //   // Set paper popup
+      //   setPaperPopup({
+      //     id: nodeData.id,
+      //     label: nodeData.label,
+      //   });
+      // });
 
       // // Click an edge
       // graph.on("edge:click", (e) => {

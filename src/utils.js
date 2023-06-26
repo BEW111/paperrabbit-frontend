@@ -1,4 +1,5 @@
 import axios from "axios";
+import _ from "lodash";
 
 const MAX_SEARCH_RESULTS = 10;
 
@@ -16,8 +17,6 @@ export const fetchArxivTitle = async (articleId) => {
     const title = xml.getElementsByTagName("title")[1]?.textContent;
     const summary = xml.getElementsByTagName("summary")[0]?.textContent;
 
-    console.log(`Title: ${title}`);
-    console.log(`Summary: ${summary}`);
     return title;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -25,18 +24,25 @@ export const fetchArxivTitle = async (articleId) => {
   }
 };
 
-export const convertApiGraphToG6Graph = async (apiGraph) => {
+export const convertApiGraphToVisGraph = async (apiGraph) => {
   let newData = {
-    nodes: await Promise.all(
-      apiGraph.nodes.map(async (id) => ({
-        id: id,
-        label: await fetchArxivTitle(id),
-      }))
+    nodes: _.uniqBy(
+      await Promise.all(
+        apiGraph.nodes.map(async (id) => ({
+          id: id,
+          label: await fetchArxivTitle(id),
+        }))
+      ),
+      "id"
     ),
-    edges: apiGraph.edges.map((triple) => ({
-      source: triple[0],
-      target: triple[2],
-    })),
+    edges: _.uniqWith(
+      apiGraph.edges.map((triple) => ({
+        from: triple[0],
+        to: triple[2],
+        arrows: "to",
+      })),
+      _.isEqual
+    ),
   };
 
   return newData;
@@ -51,8 +57,6 @@ export const searchArxiv = async (query) => {
         max_results: MAX_SEARCH_RESULTS, // number of results to fetch
       },
     });
-
-    console.log(response);
 
     // Parse the xml data
     const parser = new DOMParser();

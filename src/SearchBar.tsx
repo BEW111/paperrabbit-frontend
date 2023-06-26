@@ -3,23 +3,21 @@ import React, { useState } from "react";
 import { BiX } from "react-icons/bi";
 import axios from "axios";
 
-import { searchArxiv, convertApiGraphToG6Graph } from "./utils";
+import { searchArxiv, convertApiGraphToVisGraph } from "./utils";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "http://127.0.0.1:5000";
 
 const SearchResultComponent = (props) => {
   const onAddResult = async () => {
     props.setSearchResultsLoading(true);
     props.closeSearchResults();
-    console.log(props.arxivId);
 
     const link = props.arxivId;
     const match = link.match(/abs\/(\d+\.\d+)/);
 
     if (match) {
       const nodeResults = (await axios.get(`${API_URL}/${match[1]}`)).data;
-      const newGraph = await convertApiGraphToG6Graph(nodeResults);
-      console.log(newGraph);
+      const newGraph = await convertApiGraphToVisGraph(nodeResults);
       props.setGraphData(newGraph);
     } else {
       console.log("Error in extracting ID");
