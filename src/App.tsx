@@ -43,7 +43,7 @@ const App = () => {
   console.log(paperPopup);
 
   return (
-    <div className="h-screen w-full bg-amber-100">
+    <div className="h-screen w-full bg-amber-100 font-sans">
       <div className="absolute h-full w-full cursor-move">
         <RabbitGraph graphData={graphData} setPaperPopup={setPaperPopup} />
       </div>
