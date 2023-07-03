@@ -6,7 +6,7 @@ import axios from "axios";
 import { searchArxiv } from "./utils";
 import { defaultPopupState } from "./PaperPopup";
 
-const API_URL = "https://paperrabbit.fly.dev/";
+const API_URL = "https://paperrabbit.fly.dev";
 
 const SearchResultComponent = ({ setSearchResultsLoading, closeSearchResults, arxivId, addNode, clearGraph, title, summary }) => {  
   const onAddResult = async () => {
