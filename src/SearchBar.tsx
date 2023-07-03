@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { BiX } from "react-icons/bi";
 import axios from "axios";
@@ -8,33 +8,50 @@ import { defaultPopupState } from "./PaperPopup";
 
 const API_URL = "http://127.0.0.1:5000";
 
-const SearchResultComponent = (props) => {
+const SearchResultComponent = ({ setSearchResultsLoading, closeSearchResults, arxivId, addNode, clearGraph, title, summary }) => {  
   const onAddResult = async () => {
-    props.setSearchResultsLoading(true);
-    props.closeSearchResults();
+    clearGraph();
 
-    const link = props.arxivId;
+    setSearchResultsLoading(true);
+    closeSearchResults();
+
+    const link = arxivId;
     const match = link.match(/abs\/(\d+\.\d+)/);
 
-    if (match) {
-      const nodeResults = (await axios.get(`${API_URL}/${match[1]}`)).data;
-      const newGraph = await convertApiGraphToVisGraph(nodeResults);
-      props.setGraphData(newGraph);
-    } else {
-      console.log("Error in extracting ID");
+    if (!match) {
+      console.error("Error in extracting ID");
+      setSearchResultsLoading(false);
+      return;
     }
-    props.setSearchResultsLoading(false);
+    
+    const response = await fetch(`${API_URL}/${match[1]}`);
+    if (!response.ok || !response.body) {
+      console.error(`Error in fetching data from API (status: ${response.status}) for ${match[1]}`);
+      setSearchResultsLoading(false);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break; 
+      console.error(String.fromCharCode(...value)) // NOTE: need to use console.error because console.log is being overriden
+      const { node, edge } = JSON.parse(String.fromCharCode(...value));
+      addNode(node, edge);
+    }
+    
+    setSearchResultsLoading(false);
   };
 
   return (
     <div className="flex border-t border-t-black p-3">
       <div className="flex-1 ">
         <b className="hover:underline">
-          <a target="_blank" href={props.arxivId}>
-            {props.title}
+          <a target="_blank" href={arxivId}>
+            {title}
           </a>
         </b>
-        <p className="line-clamp-2">{props.summary}</p>
+        <p className="line-clamp-2">{summary}</p>
       </div>
       <div className="flex w-24 items-center justify-center">
         <button onClick={onAddResult}>Add</button>
@@ -51,7 +68,7 @@ type SearchResult = {
   doi: string | null;
 };
 
-const SearchBar = ({ setGraphData, setPaperPopup }) => {
+const SearchBar = ({ addNode, clearGraph, setPaperPopup }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResultsLoading, setSearchResultsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
@@ -156,7 +173,8 @@ const SearchBar = ({ setGraphData, setPaperPopup }) => {
                 title={result.title}
                 summary={result.summary}
                 closeSearchResults={closeSearchResults}
-                setGraphData={setGraphData}
+                addNode={addNode}
+                clearGraph={clearGraph}
                 setSearchResultsLoading={setSearchResultsLoading}
               />
             ))}

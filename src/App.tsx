@@ -5,9 +5,36 @@ import SearchBar from "./SearchBar";
 import logo from "./logo.png";
 import PaperPopup, { PopupInfo, defaultPopupState } from "./PaperPopup";
 import RabbitGraph from "./RabbitGraph";
+import { fetchArxivTitle } from "./utils.js";
 
 // temp to start
-const data = {
+
+interface ApiNode {
+  id: string;
+  title: string;
+  summary: string;
+  authors: string[];
+}
+
+type ApiEdge = [string, string, string];
+
+interface Node {
+  id: string;
+  label: string;
+}
+
+interface Edge {
+  from: string;
+  to: string;
+  arrows: string;
+}
+
+interface GraphData {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+const data: GraphData = {
   nodes: [
     {
       id: "2106.09685",
@@ -38,6 +65,17 @@ const data = {
 
 const App = () => {
   const [graphData, setGraphData] = useState(data);
+  const addNode = (node: ApiNode, edge: ApiEdge) => {
+    setGraphData((prevGraphData) => ({
+      nodes: [...prevGraphData.nodes, { id: node.id, label: node.title } ],
+      edges: [...prevGraphData.edges, { from: edge[0], to: edge[2], arrows: "to" }],
+    }));
+  };
+
+  const clearGraph = () => {
+    setGraphData({ nodes: [], edges: [] });
+  }
+
   const [paperPopup, setPaperPopup] = useState<PopupInfo>(defaultPopupState);
 
   console.log(paperPopup);
@@ -48,7 +86,7 @@ const App = () => {
         <RabbitGraph graphData={graphData} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute flex h-full w-full flex-col items-center justify-center">
-        <SearchBar setGraphData={setGraphData} setPaperPopup={setPaperPopup} />
+        <SearchBar addNode={addNode} clearGraph={clearGraph} setPaperPopup={setPaperPopup} />
       </div>
       <div className="pointer-events-none absolute right-0 top-0 z-10 flex h-full w-1/3 items-center justify-center p-6">
         {paperPopup.mode != null && (
