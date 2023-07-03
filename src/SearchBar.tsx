@@ -3,10 +3,10 @@ import React, { useState, useEffect } from "react";
 import { BiX } from "react-icons/bi";
 import axios from "axios";
 
-import { searchArxiv, convertApiGraphToVisGraph } from "./utils";
+import { searchArxiv } from "./utils";
 import { defaultPopupState } from "./PaperPopup";
 
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "https://paperrabbit.fly.dev/";
 
 const SearchResultComponent = ({ setSearchResultsLoading, closeSearchResults, arxivId, addNode, clearGraph, title, summary }) => {  
   const onAddResult = async () => {

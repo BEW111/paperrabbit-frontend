@@ -5,7 +5,7 @@ import SearchBar from "./SearchBar";
 import logo from "./logo.png";
 import PaperPopup, { PopupInfo, defaultPopupState } from "./PaperPopup";
 import RabbitGraph from "./RabbitGraph";
-import { fetchArxivTitle } from "./utils.js";
+import _ from "lodash";
 
 // temp to start
 
@@ -67,8 +67,8 @@ const App = () => {
   const [graphData, setGraphData] = useState(data);
   const addNode = (node: ApiNode, edge: ApiEdge) => {
     setGraphData((prevGraphData) => ({
-      nodes: [...prevGraphData.nodes, { id: node.id, label: node.title } ],
-      edges: [...prevGraphData.edges, { from: edge[0], to: edge[2], arrows: "to" }],
+      nodes: _.uniqBy([...prevGraphData.nodes, { id: node.id, label: node.title }], "id"),
+      edges: _.uniqWith([...prevGraphData.edges, { from: edge[0], to: edge[2], arrows: "to" }], _.isEqual),
     }));
   };
 
