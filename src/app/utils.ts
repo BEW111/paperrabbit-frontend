@@ -1,7 +1,6 @@
 import axios from "axios";
 import _ from "lodash";
-
-const MAX_SEARCH_RESULTS = 10;
+import { MAX_ARXIV_SEARCH_RESULTS } from "./constants";
 
 export const fetchArxivTitle = async (articleId) => {
   try {
@@ -54,7 +53,7 @@ export const searchArxiv = async (query) => {
       params: {
         search_query: `ti:${query} AND cat:cs.LG`, // searches in all fields
         start: 0, // starting index
-        max_results: MAX_SEARCH_RESULTS, // number of results to fetch
+        max_results: MAX_ARXIV_SEARCH_RESULTS, // number of results to fetch
       },
     });
 

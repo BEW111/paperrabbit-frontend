@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 
-import SearchBar from "./SearchBar";
+import SearchBar from "./components/SearchBar";
 
-import logo from "./logo.png";
-import PaperPopup, { PopupInfo, defaultPopupState } from "./PaperPopup";
-import RabbitGraph from "./RabbitGraph";
+import logo from "../logo.png";
+import PaperPopup, {
+  PopupInfo,
+  defaultPopupState,
+} from "./components/PaperPopup";
+import RabbitGraph from "./components/RabbitGraph";
 
-// temp to start
+// temp data to start, replace with some sort of message
 const data = {
   nodes: [
     {

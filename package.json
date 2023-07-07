@@ -1,8 +1,8 @@
 {
   "license": "MIT",
   "dependencies": {
-    "@antv/g6": "^4.8.17",
     "@emotion/css": "^11.11.2",
+    "@reduxjs/toolkit": "^1.9.5",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.4.0",
@@ -13,8 +13,8 @@
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-force-graph": "^1.43.0",
     "react-icons": "^4.9.0",
+    "react-redux": "^8.1.1",
     "slate": "^0.94.1",
     "slate-history": "^0.93.0",
     "slate-react": "^0.97.0",
@@ -26,6 +26,7 @@
     "@types/react": "^18.2.12",
     "@types/react-dom": "^18.2.5",
     "autoprefixer": "^10.4.14",
+    "buffer": "^5.5.0||^6.0.0",
     "parcel": "^2.9.2",
     "postcss": "^8.4.24",
     "process": "^0.11.10"

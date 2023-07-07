@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "esModuleInterop": true,
+    "jsx": "react",
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*", "./types/**/*"]
+}

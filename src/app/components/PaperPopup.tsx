@@ -3,9 +3,16 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { BiX, BiArrowBack } from "react-icons/bi";
 import MarkdownPreview from "./MarkdownEditor";
 
-import { getQuizData } from "./utils";
+import { getQuizData } from "../utils";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import {
+  updatePaperNotes,
+  markAsCompleted,
+  markAsUncompleted,
+  selectPaperById,
+} from "../redux/paperSlice";
 
-type Quiz = {
+export type Quiz = {
   question: string;
   options: string[];
   answer: string;
@@ -140,6 +147,8 @@ const NotesComponent = ({ enableQuiz }) => {
 
 const PaperPopup = ({ closePaperPopup, paperPopupInfo, setPaperPopup }) => {
   const [quizData, setQuizData] = useState<Quiz | null>(null);
+  // const paperData = useAppSelector(selectPaperById());
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     let isSubscribed = true;
@@ -154,7 +163,9 @@ const PaperPopup = ({ closePaperPopup, paperPopupInfo, setPaperPopup }) => {
 
     refreshQuizData().catch(console.error);
 
-    return () => (isSubscribed = false);
+    return () => {
+      isSubscribed = false;
+    };
   }, []);
 
   const enableQuiz = () => {
