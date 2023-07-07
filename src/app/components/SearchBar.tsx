@@ -3,11 +3,19 @@ import React, { useState } from "react";
 import { useAppDispatch } from "../redux/hooks";
 import { AppDispatch } from "../redux/store";
 import { searchArxiv, streamGraphData } from "../utils";
-import { defaultPopupState } from "./PaperPopup";
+import { closePopup } from "../redux/popupSlice";
 
 import { BiX } from "react-icons/bi";
 import LoadingIcon from "./icons/LoadingIcon";
 import SearchIcon from "./icons/SearchIcon";
+
+type SearchResult = {
+  id: string | null;
+  title: string | null;
+  summary: string | null;
+  published: string | null;
+  doi: string | null;
+};
 
 const SearchResultComponent = ({
   setSearchResultsLoading,
@@ -53,18 +61,11 @@ const SearchResultComponent = ({
   );
 };
 
-type SearchResult = {
-  id: string | null;
-  title: string | null;
-  summary: string | null;
-  published: string | null;
-  doi: string | null;
-};
-
-const SearchBar = ({ setPaperPopup }) => {
+const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResultsLoading, setSearchResultsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
+  const dispatch = useAppDispatch();
 
   const onSubmitSearch = async () => {
     const query = searchTerm;
@@ -74,7 +75,7 @@ const SearchBar = ({ setPaperPopup }) => {
     setSearchResults(results);
     setSearchResultsLoading(false);
 
-    setPaperPopup(defaultPopupState);
+    dispatch(closePopup);
   };
 
   const closeSearchResults = () => {

@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import graphReducer from "./graphSlice";
 import paperReducer from "./paperSlice";
+import popupReducer from "./popupSlice";
 
 const store = configureStore({
   reducer: {
     graph: graphReducer,
     paper: paperReducer,
+    popup: popupReducer,
   },
 });
 

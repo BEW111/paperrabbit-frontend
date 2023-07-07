@@ -8,15 +8,15 @@ import React, {
   useEffect,
 } from "react";
 import { Slate, Editable, withReact } from "slate-react";
-import { Text, createEditor, Descendant } from "slate";
+import { Text, createEditor, Descendant, Editor } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "@emotion/css";
 
 const MarkdownPreviewExample = () => {
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-  const containerRef = useRef(null);
 
+  const containerRef = useRef(null);
   const [containerHeight, setContainerHeight] = useState(0);
 
   const decorate = useCallback(([node, path]) => {
@@ -57,11 +57,17 @@ const MarkdownPreviewExample = () => {
     return ranges;
   }, []);
 
+  // Get the height of the container
   useEffect(() => {
     if (containerRef.current) {
       setContainerHeight(containerRef.current.getBoundingClientRect().height);
     }
   }, []);
+
+  const onEditorBlur = (event: Event, editor: Editor) => {
+    console.log(event);
+    console.log(editor);
+  };
 
   return (
     <div className="h-full w-full" ref={containerRef}>
@@ -70,7 +76,7 @@ const MarkdownPreviewExample = () => {
           className="outline-none"
           decorate={decorate}
           renderLeaf={renderLeaf}
-          placeholder="Write some markdown..."
+          onBlur={onEditorBlur}
           style={{
             minHeight: `${containerHeight}px`,
           }}

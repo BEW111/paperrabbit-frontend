@@ -2,7 +2,10 @@
 // user notes, quizzes, quiz results, and if the papers have been marked as completed
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Quiz } from "../components/PaperPopup";
+import { Text, createEditor, Descendant } from "slate";
+
+import { Quiz } from "../types/popup";
+import { RootState } from "./store";
 
 type PaperData = {
   notes: string;
@@ -10,11 +13,11 @@ type PaperData = {
   completed: boolean;
 };
 
-type PaperDictionary = {
+type PaperDictionaryState = {
   [paperId: string]: PaperData;
 };
 
-const initialState: PaperDictionary = {};
+const initialState: PaperDictionaryState = {};
 
 export const paperSlice = createSlice({
   name: "paper",
@@ -59,7 +62,7 @@ export const {
   markAsCompleted,
   markAsUncompleted,
 } = paperSlice.actions;
-export const selectAllPapers = (state) => state.paper;
+export const selectAllPapers = (state: RootState) => state.paper;
 export const selectPaperById = (id: string) => (state) => state.paper[id];
 
 export default paperSlice.reducer;

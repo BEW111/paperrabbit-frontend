@@ -4,7 +4,6 @@
     "@emotion/css": "^11.11.2",
     "@reduxjs/toolkit": "^1.9.5",
     "@tailwindcss/forms": "^0.5.3",
-    "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.4.0",
     "feedparser": "^2.2.10",
     "lodash": "^4.17.21",

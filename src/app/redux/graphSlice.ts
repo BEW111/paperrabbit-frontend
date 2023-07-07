@@ -6,6 +6,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { GraphData } from "../types/graph";
 import { GraphNode, GraphEdge } from "../types/graph";
+import { RootState } from "./store";
 
 const initialState: GraphData = {
   nodes: [],
@@ -30,6 +31,6 @@ export const graphSlice = createSlice({
 });
 
 export const { addNode, addEdge, clearGraph } = graphSlice.actions;
-export const selectGraphData = (state) => state.graph;
+export const selectGraphData = (state: RootState) => state.graph;
 
 export default graphSlice.reducer;

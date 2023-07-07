@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import { BACKEND_API_URL, MAX_ARXIV_SEARCH_RESULTS } from "./constants";
 import { ApiNode, ApiEdge, GraphNode, GraphEdge } from "./types/graph";
-import { addNode, addEdge } from "./redux/graphSlice";
+import { addNode, addEdge, clearGraph } from "./redux/graphSlice";
 import { AppDispatch } from "./redux/store";
 
 export const searchArxiv = async (query) => {
@@ -68,6 +68,9 @@ export const streamGraphData = async (
   articleTitle: string,
   dispatch: AppDispatch
 ) => {
+  // Clear current graph
+  dispatch(clearGraph());
+
   // Add the very first node (not returned in API)
   const firstNode: GraphNode = {
     id: articleId,

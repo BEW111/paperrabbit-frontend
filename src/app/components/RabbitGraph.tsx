@@ -7,9 +7,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { Network, Options } from "vis-network";
 import _ from "lodash";
 
-import { useAppSelector } from "../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectGraphData } from "../redux/graphSlice";
-import { GraphNode, GraphEdge } from "../types/graph";
+import { openOrUpdatePopup } from "../redux/popupSlice";
+import { GraphNode, GraphEdge, GraphData } from "../types/graph";
 
 const STROKE_COLOR = "#111827"; // gray-900
 const STROKE_HOVER_COLOR = "#f59e0b"; // amber-500
@@ -47,13 +48,12 @@ const options: Options = {
       maximum: 300,
     },
   },
-  // edges: {
-  //   font: {
-  //     // Set to the default colors as per the documentation
-  //     color: "#343434",
-  //     strokeColor: "#ffffff",
-  //   },
-  // },
+  edges: {
+    font: {
+      color: STROKE_COLOR,
+      strokeColor: "#ffffff",
+    },
+  },
   interaction: {
     hover: true,
   },
@@ -67,8 +67,9 @@ const options: Options = {
   },
 };
 
-function Graph({ setPaperPopup }) {
+function Graph() {
   const graphData = useAppSelector(selectGraphData);
+  const dispatch = useAppDispatch();
 
   // Locally stored nodes/edges
   const [addedNodes, setAddedNodes] = useState<GraphNode[]>([]);
@@ -77,19 +78,30 @@ function Graph({ setPaperPopup }) {
   // Refs
   const networkContainerRef = useRef<HTMLElement | null>(null);
   const networkInstanceRef = useRef<Network | null>(null);
+  const addedNodesRef = useRef<GraphNode[]>([]);
+
+  useEffect(() => {
+    addedNodesRef.current = addedNodes;
+  }, [addedNodes]);
 
   // Node interations
   const handleSelectNode = (params) => {
     if (params.nodes.length > 0 && networkInstanceRef) {
       const nodeId = params.nodes[0];
-      const clickedNode = graphData.nodes.find((node) => node.id === nodeId);
+      const clickedNode = addedNodesRef.current.find(
+        (node) => node.id === nodeId
+      );
+      console.log(nodeId);
       console.log(clickedNode);
+
       if (clickedNode) {
-        setPaperPopup({
-          id: clickedNode.id,
-          label: clickedNode.label,
-          mode: "notes",
-        });
+        dispatch(
+          openOrUpdatePopup({
+            id: clickedNode.id,
+            label: clickedNode.label,
+            mode: "notes",
+          })
+        );
       }
     }
   };
@@ -105,7 +117,7 @@ function Graph({ setPaperPopup }) {
   };
 
   useEffect(() => {
-    console.log("init");
+    // Initialize graph data
     const initGraphData = {
       nodes: addedNodes,
       edges: addedEdges,
@@ -119,11 +131,22 @@ function Graph({ setPaperPopup }) {
     networkInstanceRef.current.on("click", handleSelectNode);
     networkInstanceRef.current.on("hoverNode", handleHoverNode);
     networkInstanceRef.current.on("blurNode", handleBlurNode);
+
+    return () => {
+      networkInstanceRef.current.off("click", handleSelectNode);
+      networkInstanceRef.current.off("hoverNode", handleHoverNode);
+      networkInstanceRef.current.off("blurNode", handleBlurNode);
+    };
   }, []);
 
   // Update the graph data
   useEffect(() => {
-    console.log("update");
+    // Check if graph was reset
+    if (graphData.nodes.length == 0) {
+      setAddedNodes([]);
+      setAddedEdges([]);
+    }
+
     // Update nodes
     const newNodes = graphData.nodes.filter(
       (node) => !addedNodes.some((addedNode) => addedNode.id === node.id)
@@ -147,12 +170,6 @@ function Graph({ setPaperPopup }) {
       networkInstanceRef.current.body.data.edges.add(edge);
     });
     setAddedEdges([...addedEdges, ...newEdges]);
-
-    return () => {
-      networkInstanceRef.current.off("click", handleSelectNode);
-      networkInstanceRef.current.off("hoverNode", handleHoverNode);
-      networkInstanceRef.current.off("blurNode", handleBlurNode);
-    };
   }, [graphData]);
 
   return (

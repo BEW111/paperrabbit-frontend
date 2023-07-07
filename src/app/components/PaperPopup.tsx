@@ -11,20 +11,14 @@ import {
   markAsUncompleted,
   selectPaperById,
 } from "../redux/paperSlice";
-
-export type Quiz = {
-  question: string;
-  options: string[];
-  answer: string;
-};
-
-type PopupMode = "quiz" | "notes" | "journey" | null;
-
-export type PopupInfo = {
-  id: string;
-  label: string;
-  mode: PopupMode;
-};
+import { Quiz } from "../types/popup";
+import {
+  closePopup,
+  setPopupMode,
+  selectPopupLabel,
+  selectPopupMode,
+  selectPopupId,
+} from "../redux/popupSlice";
 
 export const defaultPopupState = {
   id: "",
@@ -129,7 +123,9 @@ const QuizComponent = ({ question, options, answer }: Quiz) => {
   );
 };
 
-const NotesComponent = ({ enableQuiz }) => {
+const NotesComponent = () => {
+  const dispatch = useAppDispatch();
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex-grow">
@@ -137,7 +133,7 @@ const NotesComponent = ({ enableQuiz }) => {
       </div>
       <div
         className="m-4 flex-none cursor-pointer rounded-lg bg-blue-900 p-2 text-center text-2xl text-white"
-        onClick={enableQuiz}
+        onClick={() => dispatch(setPopupMode("quiz"))}
       >
         Take Quiz
       </div>
@@ -145,9 +141,13 @@ const NotesComponent = ({ enableQuiz }) => {
   );
 };
 
-const PaperPopup = ({ closePaperPopup, paperPopupInfo, setPaperPopup }) => {
+const PaperPopup = () => {
   const [quizData, setQuizData] = useState<Quiz | null>(null);
-  // const paperData = useAppSelector(selectPaperById());
+  const popupMode = useAppSelector(selectPopupMode);
+  const popupLabel = useAppSelector(selectPopupLabel);
+  const popupId = useAppSelector(selectPopupId);
+  const paperData = useAppSelector(selectPaperById(popupId));
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -168,41 +168,38 @@ const PaperPopup = ({ closePaperPopup, paperPopupInfo, setPaperPopup }) => {
     };
   }, []);
 
-  const enableQuiz = () => {
-    setPaperPopup({ ...paperPopupInfo, mode: "quiz" });
-  };
   const disableQuiz = () => {
-    setPaperPopup({ ...paperPopupInfo, mode: "notes" });
+    dispatch(setPopupMode("notes"));
   };
 
   return (
     <div className="space-between pointer-events-auto flex h-full flex-1 flex-col rounded-lg border-2 border-black bg-slate-300">
       <div className="align-center flex w-full flex-none justify-center border-b border-b-black p-4">
-        {paperPopupInfo.mode == "quiz" && (
+        {popupMode == "quiz" && (
           <BiArrowBack
             className="absolute left-10 cursor-pointer"
             size={24}
             onClick={disableQuiz}
           />
         )}
-        <h2 className="pl-2 text-center">
+        <h2 className="px-6 text-center">
           <a
-            className="hover:underline"
-            href={`https://arxiv.org/abs/${paperPopupInfo.id}`}
+            className="text-center hover:underline"
+            href={`https://arxiv.org/abs/${popupId}`}
             target="_blank"
           >
-            {paperPopupInfo.label}
+            {popupLabel}
           </a>
         </h2>
         <BiX
           className="absolute right-10 cursor-pointer"
           size={24}
-          onClick={closePaperPopup}
+          onClick={() => dispatch(closePopup())}
         />
       </div>
       <div className="pointer-events-auto flex-auto p-4">
-        {paperPopupInfo.mode == "notes" ? (
-          <NotesComponent enableQuiz={enableQuiz} />
+        {popupMode == "notes" ? (
+          <NotesComponent />
         ) : (
           quizData && (
             <QuizComponent
