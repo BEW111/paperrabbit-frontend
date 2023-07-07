@@ -59,7 +59,7 @@ export const {
   markAsCompleted,
   markAsUncompleted,
 } = paperSlice.actions;
-export const selectAllPapers = (state) => state;
-export const selectPaperById = (id: string) => (state) => state[id];
+export const selectAllPapers = (state) => state.paper;
+export const selectPaperById = (id: string) => (state) => state.paper[id];
 
 export default paperSlice.reducer;

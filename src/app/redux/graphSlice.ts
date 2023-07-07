@@ -1,8 +1,11 @@
-// Keeps track of all info related to specific papers, including
-// user notes, quizzes, quiz results, and if the papers have been marked as completed
+// Keeps track of the current graph
+
+// We don't worry about the stored graph being a valid graph, since we will
+// check this when we actually render the graph
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { GraphData } from "../types/graph";
+import { GraphNode, GraphEdge } from "../types/graph";
 
 const initialState: GraphData = {
   nodes: [],
@@ -12,11 +15,21 @@ const initialState: GraphData = {
 export const graphSlice = createSlice({
   name: "graph",
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    addNode: (state, action: PayloadAction<GraphNode>) => {
+      state.nodes.push(action.payload);
+    },
+    addEdge: (state, action: PayloadAction<GraphEdge>) => {
+      state.edges.push(action.payload);
+    },
+    clearGraph: (state) => {
+      state.nodes = [];
+      state.edges = [];
+    },
+  },
 });
 
-export const {} = graphSlice.actions;
-// export const selectAllPapers = (state) => state;
-// export const selectPaperById = (id: string) => (state) => state[id];
+export const { addNode, addEdge, clearGraph } = graphSlice.actions;
+export const selectGraphData = (state) => state.graph;
 
 export default graphSlice.reducer;

@@ -1,51 +1,10 @@
 import axios from "axios";
 import _ from "lodash";
-import { MAX_ARXIV_SEARCH_RESULTS } from "./constants";
 
-export const fetchArxivTitle = async (articleId) => {
-  try {
-    const response = await axios.get(
-      `https://export.arxiv.org/api/query?id_list=${articleId}`
-    );
-
-    // Parse the xml data
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(response.data, "text/xml");
-
-    // Extract the title and summary
-    const title = xml.getElementsByTagName("title")[1]?.textContent;
-    const summary = xml.getElementsByTagName("summary")[0]?.textContent;
-
-    return title;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return null;
-  }
-};
-
-export const convertApiGraphToVisGraph = async (apiGraph) => {
-  let newData = {
-    nodes: _.uniqBy(
-      await Promise.all(
-        apiGraph.nodes.map(async (id) => ({
-          id: id,
-          label: await fetchArxivTitle(id),
-        }))
-      ),
-      "id"
-    ),
-    edges: _.uniqWith(
-      apiGraph.edges.map((triple) => ({
-        from: triple[0],
-        to: triple[2],
-        arrows: "to",
-      })),
-      _.isEqual
-    ),
-  };
-
-  return newData;
-};
+import { BACKEND_API_URL, MAX_ARXIV_SEARCH_RESULTS } from "./constants";
+import { ApiNode, ApiEdge, GraphNode, GraphEdge } from "./types/graph";
+import { addNode, addEdge } from "./redux/graphSlice";
+import { AppDispatch } from "./redux/store";
 
 export const searchArxiv = async (query) => {
   try {
@@ -103,3 +62,57 @@ export const getQuizData = async (articleId) => {
 
   return fakeQuizData;
 };
+
+export const streamGraphData = async (
+  articleId: string,
+  articleTitle: string,
+  dispatch: AppDispatch
+) => {
+  // Add the very first node (not returned in API)
+  const firstNode: GraphNode = {
+    id: articleId,
+    label: articleTitle,
+  };
+  dispatch(addNode(firstNode));
+
+  const response = await fetch(BACKEND_API_URL + "/" + articleId);
+  if (!response.ok || !response.body)
+    throw Error(
+      `Error in fetching data from API (status: ${response.status}) for ${articleId}`
+    );
+
+  const reader = response.body.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    // Read new node from API
+    // Will be a json with "node" and "edge" objects
+    type ApiNodeEdgePair = {
+      node: ApiNode;
+      edge: ApiEdge;
+    };
+    const { node, edge }: ApiNodeEdgePair = JSON.parse(
+      String.fromCharCode(...value)
+    );
+
+    // Convert to form to be stored in the api
+    const newNode: GraphNode = {
+      id: node.id,
+      label: node.title,
+    };
+
+    const newEdge: GraphEdge = {
+      from: edge[0],
+      label: edge[1],
+      to: edge[2],
+      arrows: "to",
+    };
+
+    dispatch(addNode(newNode));
+    dispatch(addEdge(newEdge));
+  }
+};
+
+// export const convertApiGraphToVisGraph =

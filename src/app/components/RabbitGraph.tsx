@@ -1,6 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { Network, Options } from "vis-network/peer/esm/vis-network";
-import { DataSet } from "vis-data/peer/esm/vis-data";
+// This component uses the Network component from vis-network to render
+// The graph is rendered using a ref and is updated in the effect hook
+// We store the nodes and edges with Redux, but update a local copy (just adding/removing)
+// Upon detecting changes to the graph
+
+import React, { useEffect, useRef, useState } from "react";
+import { Network, Options } from "vis-network";
+import _ from "lodash";
+
+import { useAppSelector } from "../redux/hooks";
+import { selectGraphData } from "../redux/graphSlice";
+import { GraphNode, GraphEdge } from "../types/graph";
 
 const STROKE_COLOR = "#111827"; // gray-900
 const STROKE_HOVER_COLOR = "#f59e0b"; // amber-500
@@ -10,16 +19,71 @@ const NODE_FILL_HOVER_COLOR = "#fef3c7"; // amber-100
 const NODE_FILL_SELECT_COLOR = "#bfdbfe"; // blue-200
 const TEXT_COLOR = "black";
 
-function Graph(props) {
-  const { graphData, setPaperPopup } = props;
-  const domNode = useRef<HTMLElement | null>(null);
-  let network: Network | null = null;
+const options: Options = {
+  nodes: {
+    shape: "box",
+    color: {
+      border: STROKE_COLOR,
+      background: NODE_FILL_COLOR,
+      hover: {
+        border: STROKE_HOVER_COLOR,
+        background: NODE_FILL_HOVER_COLOR,
+      },
+      highlight: {
+        border: STROKE_SELECT_COLOR,
+        background: NODE_FILL_SELECT_COLOR,
+      },
+    },
+    labelHighlightBold: false,
+    scaling: {
+      label: {
+        enabled: true,
+        min: 8,
+        max: 30,
+      },
+    },
+    widthConstraint: {
+      minimum: 100,
+      maximum: 300,
+    },
+  },
+  // edges: {
+  //   font: {
+  //     // Set to the default colors as per the documentation
+  //     color: "#343434",
+  //     strokeColor: "#ffffff",
+  //   },
+  // },
+  interaction: {
+    hover: true,
+  },
+  physics: {
+    enabled: true,
+    solver: "forceAtlas2Based",
+    forceAtlas2Based: {
+      springLength: 150,
+      gravitationalConstant: -100,
+    },
+  },
+};
 
+function Graph({ setPaperPopup }) {
+  const graphData = useAppSelector(selectGraphData);
+
+  // Locally stored nodes/edges
+  const [addedNodes, setAddedNodes] = useState<GraphNode[]>([]);
+  const [addedEdges, setAddedEdges] = useState<GraphEdge[]>([]);
+
+  // Refs
+  const networkContainerRef = useRef<HTMLElement | null>(null);
+  const networkInstanceRef = useRef<Network | null>(null);
+
+  // Node interations
   const handleSelectNode = (params) => {
-    if (params.nodes.length > 0 && network) {
+    if (params.nodes.length > 0 && networkInstanceRef) {
       const nodeId = params.nodes[0];
       const clickedNode = graphData.nodes.find((node) => node.id === nodeId);
-
+      console.log(clickedNode);
       if (clickedNode) {
         setPaperPopup({
           id: clickedNode.id,
@@ -30,77 +94,72 @@ function Graph(props) {
     }
   };
   const handleHoverNode = (params) => {
-    if (network) {
-      network.canvas.body.container.style.cursor = "pointer";
+    if (networkInstanceRef) {
+      networkInstanceRef.current.canvas.body.container.style.cursor = "pointer";
     }
   };
   const handleBlurNode = (params) => {
-    if (network) {
-      network.canvas.body.container.style.cursor = "move";
+    if (networkInstanceRef) {
+      networkInstanceRef.current.canvas.body.container.style.cursor = "move";
     }
   };
 
   useEffect(() => {
-    const nodesDataset = new DataSet(graphData.nodes);
-    const edgesDataset = new DataSet(graphData.edges);
-
-    const data = {
-      nodes: nodesDataset,
-      edges: edgesDataset,
+    console.log("init");
+    const initGraphData = {
+      nodes: addedNodes,
+      edges: addedEdges,
     };
 
-    const options: Options = {
-      nodes: {
-        shape: "box",
-        color: {
-          border: STROKE_COLOR,
-          background: NODE_FILL_COLOR,
-          hover: {
-            border: STROKE_HOVER_COLOR,
-            background: NODE_FILL_HOVER_COLOR,
-          },
-          highlight: {
-            border: STROKE_SELECT_COLOR,
-            background: NODE_FILL_SELECT_COLOR,
-          },
-        },
-        labelHighlightBold: false,
-        scaling: {
-          label: {
-            enabled: true,
-            min: 8,
-            max: 30,
-          },
-        },
-        widthConstraint: {
-          minimum: 100,
-          maximum: 300,
-        },
-      },
-      interaction: {
-        hover: true,
-      },
-      physics: {
-        enabled: true,
-        solver: "forceAtlas2Based",
-        forceAtlas2Based: {
-          springLength: 150,
-          gravitationalConstant: -100,
-        },
-      },
-    };
+    networkInstanceRef.current = new Network(
+      networkContainerRef.current,
+      initGraphData,
+      options
+    );
+    networkInstanceRef.current.on("click", handleSelectNode);
+    networkInstanceRef.current.on("hoverNode", handleHoverNode);
+    networkInstanceRef.current.on("blurNode", handleBlurNode);
+  }, []);
 
-    network = new Network(domNode.current, data, options);
-    network.on("click", handleSelectNode);
-    network.on("hoverNode", handleHoverNode);
-    network.on("blurNode", handleBlurNode);
+  // Update the graph data
+  useEffect(() => {
+    console.log("update");
+    // Update nodes
+    const newNodes = graphData.nodes.filter(
+      (node) => !addedNodes.some((addedNode) => addedNode.id === node.id)
+    );
+    newNodes.forEach((node) => {
+      networkInstanceRef.current.body.data.nodes.add(node);
+    });
+    setAddedNodes([...addedNodes, ...newNodes]);
+
+    // Update edges
+    const newEdges = JSON.parse(JSON.stringify(graphData)).edges.filter(
+      (edge) =>
+        !addedEdges.some(
+          (addedEdge) =>
+            addedEdge.from === edge.from &&
+            addedEdge.to === edge.to &&
+            addedEdge.label === edge.label
+        )
+    );
+    newEdges.forEach((edge) => {
+      networkInstanceRef.current.body.data.edges.add(edge);
+    });
+    setAddedEdges([...addedEdges, ...newEdges]);
+
+    return () => {
+      networkInstanceRef.current.off("click", handleSelectNode);
+      networkInstanceRef.current.off("hoverNode", handleHoverNode);
+      networkInstanceRef.current.off("blurNode", handleBlurNode);
+    };
   }, [graphData]);
 
   return (
     <div
-      ref={domNode}
+      ref={networkContainerRef}
       style={{ width: window.outerWidth, height: window.outerHeight }}
-    ></div>
+    />
   );
 }
 

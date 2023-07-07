@@ -1,7 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
+import graphReducer from "./graphSlice";
+import paperReducer from "./paperSlice";
 
 const store = configureStore({
-  reducer: {},
+  reducer: {
+    graph: graphReducer,
+    paper: paperReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

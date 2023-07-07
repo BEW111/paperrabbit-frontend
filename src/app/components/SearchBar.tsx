@@ -1,42 +1,50 @@
 import React, { useState } from "react";
 
-import axios from "axios";
-
-import { searchArxiv, convertApiGraphToVisGraph } from "../utils";
-import { API_URL } from "../constants";
+import { useAppDispatch } from "../redux/hooks";
+import { AppDispatch } from "../redux/store";
+import { searchArxiv, streamGraphData } from "../utils";
 import { defaultPopupState } from "./PaperPopup";
 
 import { BiX } from "react-icons/bi";
 import LoadingIcon from "./icons/LoadingIcon";
 import SearchIcon from "./icons/SearchIcon";
 
-const SearchResultComponent = (props) => {
-  const onAddResult = async () => {
-    props.setSearchResultsLoading(true);
-    props.closeSearchResults();
+const SearchResultComponent = ({
+  setSearchResultsLoading,
+  closeSearchResults,
+  arxivId,
+  title,
+  summary,
+}) => {
+  const dispatch: AppDispatch = useAppDispatch();
 
-    const link = props.arxivId;
+  // When called, we want to update the graph with this paper
+  const onAddResult = async () => {
+    setSearchResultsLoading(true);
+    closeSearchResults();
+
+    const link = arxivId;
     const match = link.match(/abs\/(\d+\.\d+)/);
+    const id = match[1];
 
     if (match) {
-      const nodeResults = (await axios.get(`${API_URL}/${match[1]}`)).data;
-      const newGraph = await convertApiGraphToVisGraph(nodeResults);
-      props.setGraphData(newGraph);
+      // Streams graph data and updates redux state
+      await streamGraphData(id, title, dispatch);
     } else {
-      console.log("Error in extracting ID");
+      console.log("Error in extracting ID from arxiv URL");
     }
-    props.setSearchResultsLoading(false);
+    setSearchResultsLoading(false);
   };
 
   return (
     <div className="flex border-t border-t-black p-3">
       <div className="flex-1 ">
         <b className="hover:underline">
-          <a target="_blank" href={props.arxivId}>
-            {props.title}
+          <a target="_blank" href={arxivId}>
+            {title}
           </a>
         </b>
-        <p className="line-clamp-2">{props.summary}</p>
+        <p className="line-clamp-2">{summary}</p>
       </div>
       <div className="flex w-24 items-center justify-center">
         <button onClick={onAddResult}>Add</button>
@@ -53,7 +61,7 @@ type SearchResult = {
   doi: string | null;
 };
 
-const SearchBar = ({ setGraphData, setPaperPopup }) => {
+const SearchBar = ({ setPaperPopup }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResultsLoading, setSearchResultsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
@@ -121,7 +129,6 @@ const SearchBar = ({ setGraphData, setPaperPopup }) => {
                 title={result.title}
                 summary={result.summary}
                 closeSearchResults={closeSearchResults}
-                setGraphData={setGraphData}
                 setSearchResultsLoading={setSearchResultsLoading}
               />
             ))}
