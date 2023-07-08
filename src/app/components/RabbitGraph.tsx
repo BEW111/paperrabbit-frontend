@@ -174,7 +174,7 @@ function Graph() {
   return (
     <div
       ref={networkContainerRef}
-      style={{ width: window.outerWidth, height: window.outerHeight }}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 }
