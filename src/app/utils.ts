@@ -11,18 +11,21 @@ import { Quiz, isQuiz } from "./types/popup";
 // Retrieves papers from the arxiv api
 export const searchArxiv = async (query) => {
   try {
-    console.log(axios.defaults.headers);
-    const response = await axios.get("https://export.arxiv.org/api/query", {
-      params: {
-        search_query: `ti:${query} AND cat:cs.LG`, // searches in all fields
-        start: 0, // starting index
-        max_results: MAX_ARXIV_SEARCH_RESULTS, // number of results to fetch
-      },
-    });
+    const response = await fetch(
+      `https://export.arxiv.org/api/query?search_query=ti:${query} AND cat:cs.LG&start=0&max_results=${MAX_ARXIV_SEARCH_RESULTS}`
+    );
+
+    // Ensure the fetch was successful
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    // Fetch the data as text (since it's XML)
+    const data = await response.text();
 
     // Parse the xml data
     const parser = new DOMParser();
-    const xml = parser.parseFromString(response.data, "text/xml");
+    const xml = parser.parseFromString(data, "text/xml");
 
     // Iterate over each entry and extract the necessary details
     const entries = Array.from(xml.getElementsByTagName("entry"));
@@ -44,23 +47,8 @@ export const searchArxiv = async (query) => {
 
     return paperData;
   } catch (error) {
-    console.error(error);
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      console.error(error.response.data);
-      console.error(error.response.status);
-      console.error(error.response.headers);
-    } else if (error.request) {
-      // The request was made but no response was received
-      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-      // http.ClientRequest in Node.js
-      console.error(error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error("Error", error.message);
-    }
-    console.error(error.config);
+    console.error("Error fetching data:", error);
+    return [];
   }
 };
 

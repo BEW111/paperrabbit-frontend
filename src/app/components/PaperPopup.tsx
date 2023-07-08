@@ -19,6 +19,7 @@ import {
   selectPopupId,
 } from "../redux/popupSlice";
 import LoadingIcon from "./icons/LoadingIcon";
+import { Quiz } from "../types/popup";
 
 export const defaultPopupState = {
   id: "",
@@ -66,7 +67,12 @@ const QuizComponentItem = ({
   );
 };
 
-const QuizComponent = ({ paperId, question, options, answer }) => {
+const QuizComponent = ({
+  paperId,
+  question,
+  options,
+  answer,
+}: Quiz & { paperId: string }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const dispatch = useAppDispatch();
@@ -104,6 +110,7 @@ const QuizComponent = ({ paperId, question, options, answer }) => {
         <div className="flex flex-col gap-4">
           {options.map((option) => (
             <QuizComponentItem
+              key={option}
               onSelect={onSelectItem}
               question={option}
               currentSelected={selectedOption}
