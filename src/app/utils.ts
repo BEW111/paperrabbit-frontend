@@ -6,7 +6,9 @@ import { ApiNode, ApiEdge, GraphNode, GraphEdge } from "./types/graph";
 import { addNode, addEdge, clearGraph } from "./redux/graphSlice";
 import { addPaper } from "./redux/paperSlice";
 import { AppDispatch } from "./redux/store";
+import { Quiz, isQuiz } from "./types/popup";
 
+// Retrieves papers from the arxiv api
 export const searchArxiv = async (query) => {
   try {
     const response = await axios.get("https://export.arxiv.org/api/query", {
@@ -46,24 +48,19 @@ export const searchArxiv = async (query) => {
   }
 };
 
+// Gets the quiz data for a certain paper, should only be run if no cached data
 export const getQuizData = async (articleId) => {
-  // Check for cached quiz data
+  console.log("getting quiz data");
+  const response = await axios.get(BACKEND_API_URL + "/questions/" + articleId);
 
-  // Api call goes here
-  const fakeQuizData = {
-    answer: "B. Energy density",
-    options: [
-      "A. Constitutive parameters",
-      "B. Energy density",
-      "C. Momentum density",
-      "D. Energy flux",
-    ],
-    question: "What is the Energy Momentum Tensor related to?",
-  };
-
-  return fakeQuizData;
+  if (isQuiz(response.data)) {
+    return response.data as Quiz;
+  } else {
+    throw Error("Error validating quiz data from backend:\n" + response.data);
+  }
 };
 
+// Streams the graph data for a paper
 export const streamGraphData = async (
   articleId: string,
   articleTitle: string,
@@ -120,5 +117,3 @@ export const streamGraphData = async (
     dispatch(addPaper(node.id));
   }
 };
-
-// export const convertApiGraphToVisGraph =

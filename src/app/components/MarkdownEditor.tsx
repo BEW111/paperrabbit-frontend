@@ -94,10 +94,6 @@ const MarkdownEditor = ({ paperId }) => {
       })
     );
   };
-  useEffect(() => {
-    console.log(paperId);
-    console.log(notes);
-  }, [notes, paperId]);
 
   // Modify container height
   const containerRef = useRef(null);

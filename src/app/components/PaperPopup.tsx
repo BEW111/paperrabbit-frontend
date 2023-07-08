@@ -10,6 +10,8 @@ import {
   markAsCompleted,
   markAsUncompleted,
   selectPaperById,
+  selectPaperQuizById,
+  updatePaperQuiz,
 } from "../redux/paperSlice";
 import { Quiz } from "../types/popup";
 import {
@@ -19,6 +21,7 @@ import {
   selectPopupMode,
   selectPopupId,
 } from "../redux/popupSlice";
+import LoadingIcon from "./icons/LoadingIcon";
 
 export const defaultPopupState = {
   id: "",
@@ -49,8 +52,9 @@ const QuizComponentItem = ({
         )
       )}
       <div className="flex flex-row items-center">
+        {/* Circle with letter (we validate the input string using isQuiz, so slicing is okay) */}
         <div
-          className={`bg-red mr-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-500 text-gray-500 group-hover:border-blue-500 group-hover:text-blue-500 ${
+          className={`bg-red mr-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-gray-500 text-gray-500 group-hover:border-blue-500 group-hover:text-blue-500 ${
             isSelected && "border-slate-800 text-slate-800"
           }`}
         >
@@ -58,6 +62,7 @@ const QuizComponentItem = ({
             <b>{question.slice(0, 1)}</b>
           </p>
         </div>
+        {/* Actual question text */}
         <p>{question.slice(3)}</p>
       </div>
     </div>
@@ -89,7 +94,9 @@ const QuizComponent = ({ question, options, answer }: Quiz) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-none">
-        <h1 className="mb-2 text-center text-3xl">Quiz 1</h1>
+        <h1 className="mb-2 mt-2 text-center text-2xl">
+          Test Your Understanding
+        </h1>
       </div>
       <div className="flex flex-auto flex-col p-2 pl-3">
         <h2 className="mb-6">
@@ -142,21 +149,25 @@ const NotesComponent = ({ currentPaperId }) => {
 };
 
 const PaperPopup = () => {
-  const [quizData, setQuizData] = useState<Quiz | null>(null);
   const popupMode = useAppSelector(selectPopupMode);
   const currentPaperLabel = useAppSelector(selectPopupLabel);
   const currentPaperId = useAppSelector(selectPopupId);
+  const quiz = useAppSelector(selectPaperQuizById(currentPaperId));
 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     let isSubscribed = true;
 
-    const refreshQuizData = async () => {
-      const data = await getQuizData();
+    console.log("test");
 
-      if (isSubscribed) {
-        setQuizData(data);
+    const refreshQuizData = async () => {
+      if (!quiz) {
+        const newQuiz = await getQuizData(currentPaperId);
+
+        if (isSubscribed) {
+          dispatch(updatePaperQuiz({ id: currentPaperId, quiz: newQuiz }));
+        }
       }
     };
 
@@ -165,7 +176,7 @@ const PaperPopup = () => {
     return () => {
       isSubscribed = false;
     };
-  }, []);
+  }, [currentPaperId]);
 
   const disableQuiz = () => {
     dispatch(setPopupMode("notes"));
@@ -199,14 +210,17 @@ const PaperPopup = () => {
       <div className="pointer-events-auto flex-auto p-4">
         {popupMode == "notes" ? (
           <NotesComponent currentPaperId={currentPaperId} />
+        ) : quiz ? (
+          <QuizComponent
+            key={currentPaperId}
+            question={quiz.question}
+            options={quiz.options}
+            answer={quiz.answer}
+          />
         ) : (
-          quizData && (
-            <QuizComponent
-              question={quizData.question}
-              options={quizData.options}
-              answer={quizData.answer}
-            />
-          )
+          <div className="flex h-full items-center justify-center gap-2">
+            <LoadingIcon /> Generating quiz...
+          </div>
         )}
       </div>
     </div>
