@@ -123,13 +123,13 @@ const QuizComponent = ({ question, options, answer }: Quiz) => {
   );
 };
 
-const NotesComponent = () => {
+const NotesComponent = ({ currentPaperId }) => {
   const dispatch = useAppDispatch();
 
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex-grow">
-        <MarkdownPreview />
+        <MarkdownPreview paperId={currentPaperId} key={currentPaperId} />
       </div>
       <div
         className="m-4 flex-none cursor-pointer rounded-lg bg-blue-900 p-2 text-center text-2xl text-white"
@@ -144,9 +144,8 @@ const NotesComponent = () => {
 const PaperPopup = () => {
   const [quizData, setQuizData] = useState<Quiz | null>(null);
   const popupMode = useAppSelector(selectPopupMode);
-  const popupLabel = useAppSelector(selectPopupLabel);
-  const popupId = useAppSelector(selectPopupId);
-  const paperData = useAppSelector(selectPaperById(popupId));
+  const currentPaperLabel = useAppSelector(selectPopupLabel);
+  const currentPaperId = useAppSelector(selectPopupId);
 
   const dispatch = useAppDispatch();
 
@@ -185,10 +184,10 @@ const PaperPopup = () => {
         <h2 className="px-6 text-center">
           <a
             className="text-center hover:underline"
-            href={`https://arxiv.org/abs/${popupId}`}
+            href={`https://arxiv.org/abs/${currentPaperId}`}
             target="_blank"
           >
-            {popupLabel}
+            {currentPaperLabel}
           </a>
         </h2>
         <BiX
@@ -199,7 +198,7 @@ const PaperPopup = () => {
       </div>
       <div className="pointer-events-auto flex-auto p-4">
         {popupMode == "notes" ? (
-          <NotesComponent />
+          <NotesComponent currentPaperId={currentPaperId} />
         ) : (
           quizData && (
             <QuizComponent

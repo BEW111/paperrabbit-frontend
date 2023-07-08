@@ -2,23 +2,51 @@ import Prism from "prismjs";
 import "prismjs/components/prism-markdown";
 import React, {
   useCallback,
-  useMemo,
   useRef,
   useState,
   useEffect,
+  useMemo,
 } from "react";
 import { Slate, Editable, withReact } from "slate-react";
-import { Text, createEditor, Descendant, Editor } from "slate";
+import { Text, createEditor, Descendant } from "slate";
 import { withHistory } from "slate-history";
 import { css } from "@emotion/css";
 
-const MarkdownPreviewExample = () => {
+import { updatePaperNotes, selectPaperNotesById } from "../redux/paperSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+
+// Preset text
+const presetText: Descendant[] = [
+  {
+    type: "paragraph",
+    children: [{ text: "## My notes" }],
+  },
+  {
+    type: "paragraph",
+    children: [
+      {
+        text: "Leave your notes about this paper using **Markdown**-styled editing.",
+      },
+    ],
+  },
+];
+
+const MarkdownEditor = ({ paperId }) => {
+  const dispatch = useAppDispatch();
+
+  // Main editor
+  const [editor] = useState(() => withHistory(withReact(createEditor())));
+
+  // Get previous notes if they exist
+  const notes: Descendant[] | null = useAppSelector(
+    selectPaperNotesById(paperId)
+  );
+  const initialValue = useMemo(() => {
+    return notes || presetText;
+  }, [notes, paperId]);
+
+  // Rendering
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-
-  const containerRef = useRef(null);
-  const [containerHeight, setContainerHeight] = useState(0);
-
   const decorate = useCallback(([node, path]) => {
     const ranges = [];
 
@@ -57,26 +85,37 @@ const MarkdownPreviewExample = () => {
     return ranges;
   }, []);
 
-  // Get the height of the container
+  // Blurring, update redux notes
+  const onEditorBlur = () => {
+    dispatch(
+      updatePaperNotes({
+        id: paperId,
+        notes: editor.children,
+      })
+    );
+  };
+  useEffect(() => {
+    console.log(paperId);
+    console.log(notes);
+  }, [notes, paperId]);
+
+  // Modify container height
+  const containerRef = useRef(null);
+  const [containerHeight, setContainerHeight] = useState(0);
   useEffect(() => {
     if (containerRef.current) {
       setContainerHeight(containerRef.current.getBoundingClientRect().height);
     }
   }, []);
 
-  const onEditorBlur = (event: Event, editor: Editor) => {
-    console.log(event);
-    console.log(editor);
-  };
-
+  // We have a wrapper div to get the height of the component and adjust automatically
   return (
-    <div className="h-full w-full" ref={containerRef}>
+    <div className="h-full w-full" ref={containerRef} onBlur={onEditorBlur}>
       <Slate editor={editor} initialValue={initialValue}>
         <Editable
           className="outline-none"
           decorate={decorate}
           renderLeaf={renderLeaf}
-          onBlur={onEditorBlur}
           style={{
             minHeight: `${containerHeight}px`,
           }}
@@ -134,19 +173,4 @@ const Leaf = ({ attributes, children, leaf }) => {
   );
 };
 
-const initialValue: Descendant[] = [
-  {
-    type: "paragraph",
-    children: [{ text: "## My notes" }],
-  },
-  {
-    type: "paragraph",
-    children: [
-      {
-        text: "Feel free to leave notes about this paper using **Markdown**-styled editing.",
-      },
-    ],
-  },
-];
-
-export default MarkdownPreviewExample;
+export default MarkdownEditor;

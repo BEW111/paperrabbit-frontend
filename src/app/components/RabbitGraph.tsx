@@ -91,8 +91,6 @@ function Graph() {
       const clickedNode = addedNodesRef.current.find(
         (node) => node.id === nodeId
       );
-      console.log(nodeId);
-      console.log(clickedNode);
 
       if (clickedNode) {
         dispatch(

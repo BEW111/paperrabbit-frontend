@@ -4,6 +4,7 @@ import _ from "lodash";
 import { BACKEND_API_URL, MAX_ARXIV_SEARCH_RESULTS } from "./constants";
 import { ApiNode, ApiEdge, GraphNode, GraphEdge } from "./types/graph";
 import { addNode, addEdge, clearGraph } from "./redux/graphSlice";
+import { addPaper } from "./redux/paperSlice";
 import { AppDispatch } from "./redux/store";
 
 export const searchArxiv = async (query) => {
@@ -77,6 +78,7 @@ export const streamGraphData = async (
     label: articleTitle,
   };
   dispatch(addNode(firstNode));
+  dispatch(addPaper(articleId));
 
   const response = await fetch(BACKEND_API_URL + "/" + articleId);
   if (!response.ok || !response.body)
@@ -115,6 +117,7 @@ export const streamGraphData = async (
 
     dispatch(addNode(newNode));
     dispatch(addEdge(newEdge));
+    dispatch(addPaper(node.id));
   }
 };
 
