@@ -39,7 +39,7 @@ const SearchResultComponent = ({
       // Streams graph data and updates redux state
       await streamGraphData(id, title, dispatch);
     } else {
-      console.log("Error in extracting ID from arxiv URL");
+      console.error("Error in extracting ID from arxiv URL");
     }
     setSearchResultsLoading(false);
   };

@@ -11,7 +11,7 @@ import { Quiz, isQuiz } from "./types/popup";
 // Retrieves papers from the arxiv api
 export const searchArxiv = async (query) => {
   try {
-    console.log("test");
+    console.log(axios.defaults.headers);
     const response = await axios.get("https://export.arxiv.org/api/query", {
       params: {
         search_query: `ti:${query} AND cat:cs.LG`, // searches in all fields
@@ -19,7 +19,6 @@ export const searchArxiv = async (query) => {
         max_results: MAX_ARXIV_SEARCH_RESULTS, // number of results to fetch
       },
     });
-    console.log(response);
 
     // Parse the xml data
     const parser = new DOMParser();
@@ -45,8 +44,23 @@ export const searchArxiv = async (query) => {
 
     return paperData;
   } catch (error) {
-    console.error("Error fetching data:", error);
-    return [];
+    console.error(error);
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error(error.response.data);
+      console.error(error.response.status);
+      console.error(error.response.headers);
+    } else if (error.request) {
+      // The request was made but no response was received
+      // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      // http.ClientRequest in Node.js
+      console.error(error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error("Error", error.message);
+    }
+    console.error(error.config);
   }
 };
 
@@ -57,7 +71,7 @@ export const getQuizData = async (articleId) => {
   if (isQuiz(response.data)) {
     return response.data as Quiz;
   } else {
-    console.log(response);
+    console.error(response);
     throw Error("Error validating quiz data from backend:\n" + response.data);
   }
 };
