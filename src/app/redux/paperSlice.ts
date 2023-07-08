@@ -30,31 +30,19 @@ export const paperSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; quiz: Quiz }>
     ) => {
-      state[action.payload.id] = {
-        ...state[action.payload.id],
-        quiz: action.payload.quiz,
-      };
+      state[action.payload.id].quiz = action.payload.quiz;
     },
     updatePaperNotes: (
       state,
       action: PayloadAction<{ id: string; notes: Descendant[] }>
     ) => {
-      state[action.payload.id] = {
-        ...state[action.payload.id],
-        notes: action.payload.notes,
-      };
+      state[action.payload.id].notes = action.payload.notes;
     },
-    markAsCompleted: (state, action: PayloadAction<{ id: string }>) => {
-      state[action.payload.id] = {
-        ...state[action.payload.id],
-        completed: true,
-      };
+    markAsCompleted: (state, action: PayloadAction<string>) => {
+      state[action.payload].completed = true;
     },
-    markAsUncompleted: (state, action: PayloadAction<{ id: string }>) => {
-      state[action.payload.id] = {
-        ...state[action.payload.id],
-        completed: false,
-      };
+    markAsUncompleted: (state, action: PayloadAction<string>) => {
+      state[action.payload].completed = false;
     },
   },
 });

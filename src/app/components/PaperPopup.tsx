@@ -1,19 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
-import { BiX, BiArrowBack } from "react-icons/bi";
+import { BiX, BiArrowBack, BiCheckCircle } from "react-icons/bi";
 import MarkdownPreview from "./MarkdownEditor";
 
 import { getQuizData } from "../utils";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import {
-  updatePaperNotes,
   markAsCompleted,
-  markAsUncompleted,
-  selectPaperById,
   selectPaperQuizById,
   updatePaperQuiz,
+  selectPaperCompletedById,
 } from "../redux/paperSlice";
-import { Quiz } from "../types/popup";
 import {
   closePopup,
   setPopupMode,
@@ -69,9 +66,10 @@ const QuizComponentItem = ({
   );
 };
 
-const QuizComponent = ({ question, options, answer }: Quiz) => {
+const QuizComponent = ({ paperId, question, options, answer }) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const dispatch = useAppDispatch();
 
   const onSelectItem = (question) => {
     setSelectedOption(question);
@@ -79,9 +77,10 @@ const QuizComponent = ({ question, options, answer }: Quiz) => {
   };
 
   const handleSubmit = () => {
-    // User wants to go to the next question or finish the quiz
+    // For now, mark the paper "as completed" if they finish the quiz
     if (isCorrect) {
-      console.log("Finished quiz!");
+      dispatch(markAsCompleted(paperId));
+      dispatch(setPopupMode("notes"));
     } else {
       if (selectedOption === answer) {
         setIsCorrect(true);
@@ -122,7 +121,7 @@ const QuizComponent = ({ question, options, answer }: Quiz) => {
             onClick={handleSubmit}
             className="inline-block rounded-lg border-2 border-slate-500 bg-slate-500 px-4 py-2 text-white hover:cursor-pointer hover:border-white hover:bg-slate-400"
           >
-            {isCorrect ? "Next question" : "Submit"}
+            {isCorrect ? "Mark as completed" : "Submit"}
           </div>
         </div>
       </div>
@@ -153,13 +152,14 @@ const PaperPopup = () => {
   const currentPaperLabel = useAppSelector(selectPopupLabel);
   const currentPaperId = useAppSelector(selectPopupId);
   const quiz = useAppSelector(selectPaperQuizById(currentPaperId));
+  const isMarkedAsCompleted = useAppSelector(
+    selectPaperCompletedById(currentPaperId)
+  );
 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     let isSubscribed = true;
-
-    console.log("test");
 
     const refreshQuizData = async () => {
       if (!quiz) {
@@ -185,12 +185,21 @@ const PaperPopup = () => {
   return (
     <div className="space-between pointer-events-auto flex h-full flex-1 flex-col rounded-lg border-2 border-black bg-slate-300">
       <div className="align-center flex w-full flex-none justify-center border-b border-b-black p-4">
-        {popupMode == "quiz" && (
+        {popupMode == "quiz" ? (
           <BiArrowBack
             className="absolute left-10 cursor-pointer"
             size={24}
             onClick={disableQuiz}
           />
+        ) : (
+          popupMode == "notes" &&
+          isMarkedAsCompleted && (
+            <BiCheckCircle
+              className="absolute left-10"
+              size={24}
+              color="green"
+            />
+          )
         )}
         <h2 className="px-6 text-center">
           <a
@@ -213,6 +222,7 @@ const PaperPopup = () => {
         ) : quiz ? (
           <QuizComponent
             key={currentPaperId}
+            paperId={currentPaperId}
             question={quiz.question}
             options={quiz.options}
             answer={quiz.answer}

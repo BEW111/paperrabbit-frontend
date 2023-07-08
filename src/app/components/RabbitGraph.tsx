@@ -11,14 +11,15 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectGraphData } from "../redux/graphSlice";
 import { openOrUpdatePopup } from "../redux/popupSlice";
 import { GraphNode, GraphEdge, GraphData } from "../types/graph";
-
-const STROKE_COLOR = "#111827"; // gray-900
-const STROKE_HOVER_COLOR = "#f59e0b"; // amber-500
-const STROKE_SELECT_COLOR = "#1e3a8a"; // blue-900
-const NODE_FILL_COLOR = "#fffbeb"; // amber-50
-const NODE_FILL_HOVER_COLOR = "#fef3c7"; // amber-100
-const NODE_FILL_SELECT_COLOR = "#bfdbfe"; // blue-200
-const TEXT_COLOR = "black";
+import {
+  STROKE_COLOR,
+  STROKE_HOVER_COLOR,
+  STROKE_SELECT_COLOR,
+  NODE_FILL_COLOR,
+  NODE_FILL_HOVER_COLOR,
+  NODE_FILL_SELECT_COLOR,
+  TEXT_COLOR,
+} from "../constants";
 
 const options: Options = {
   nodes: {

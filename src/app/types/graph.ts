@@ -1,3 +1,5 @@
+import { NODE_FILL_COLOR, NODE_FILL_COMPLETED_COLOR } from "../constants";
+
 // The way the graph data will be stored in the app,
 // which is the same exact form as the data used for Vis
 
@@ -12,9 +14,13 @@ export type ApiNode = {
 export type ApiEdge = [string, string, string];
 
 // The types we will store the graph as in our app
+export type NodeColor =
+  | typeof NODE_FILL_COLOR
+  | typeof NODE_FILL_COMPLETED_COLOR;
 export type GraphNode = {
   id: string;
   label: string;
+  color?: NodeColor;
 };
 
 export type GraphEdge = {

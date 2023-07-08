@@ -56,6 +56,7 @@ export const getQuizData = async (articleId) => {
   if (isQuiz(response.data)) {
     return response.data as Quiz;
   } else {
+    console.log(response);
     throw Error("Error validating quiz data from backend:\n" + response.data);
   }
 };
